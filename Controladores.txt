@@ -1,0 +1,2071 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\ApoderadoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\ApoderadoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class ApoderadoController extends Controller
+{
+    public function __construct(private readonly ApoderadoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'codigo' => 'nullable|string|max:30|unique:apoderados,codigo',
+            'dni' => 'nullable|string|size:8|unique:apoderados,dni',
+            'nombres' => 'required|string|max:150',
+            'apellidos' => 'required|string|max:150',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+            'direccion' => 'nullable|string|max:200',
+            'parentesco' => 'nullable|string|max:50',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $model = $this->service->create(ApoderadoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'codigo' => 'nullable|string|max:30|unique:apoderados,codigo,' . $id . ',id',
+            'dni' => 'nullable|string|size:8|unique:apoderados,dni,' . $id . ',id',
+            'nombres' => 'sometimes|string|max:150',
+            'apellidos' => 'sometimes|string|max:150',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+            'direccion' => 'nullable|string|max:200',
+            'parentesco' => 'nullable|string|max:50',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $model = $this->service->update($id, ApoderadoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Apoderado eliminado correctamente']);
+    }
+
+    public function padres(int $id): JsonResponse
+    {
+        return response()->json($this->service->getPadres($id));
+    }
+
+    public function estudiantes(int $id): JsonResponse
+    {
+        return response()->json($this->service->getEstudiantes($id));
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\AreaDTO;
+use App\Http\Controllers\Controller;
+use App\Services\AreaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AreaController extends Controller
+{
+    public function __construct(private readonly AreaService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'area_padre_id' => 'nullable|integer|exists:areas,id',
+            'nombre' => 'required|string|max:150',
+            'codigo_siagie' => 'nullable|string|max:50',
+        ]);
+
+        $model = $this->service->create(AreaDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'area_padre_id' => 'nullable|integer|exists:areas,id',
+            'nombre' => 'sometimes|string|max:150',
+            'codigo_siagie' => 'nullable|string|max:50',
+        ]);
+
+        $model = $this->service->update($id, AreaDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Área eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\AsistenciaDTO;
+use App\Http\Controllers\Controller;
+use App\Services\AsistenciaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AsistenciaController extends Controller
+{
+    public function __construct(private readonly AsistenciaService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'matricula_id' => 'required|integer|exists:matriculas,id',
+            'fecha' => 'required|date',
+            'estado' => 'required|in:presente,ausente,tardia,justificado',
+        ]);
+
+        $model = $this->service->create(AsistenciaDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'matricula_id' => 'sometimes|integer|exists:matriculas,id',
+            'fecha' => 'sometimes|date',
+            'estado' => 'sometimes|in:presente,ausente,tardia,justificado',
+        ]);
+
+        $model = $this->service->update($id, AsistenciaDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Asistencia eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\AsistenciaPersonalDTO;
+use App\Http\Controllers\Controller;
+use App\Services\AsistenciaPersonalService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AsistenciaPersonalController extends Controller
+{
+    public function __construct(private readonly AsistenciaPersonalService $service)
+    {
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        $filtros = $request->only(['personal_id', 'desde', 'hasta', 'estado']);
+        $perPage = (int) $request->input('per_page', 15);
+        // si hay filtros paginado, si no lista simple para compatibilidad
+        if (!empty(array_filter($filtros))) {
+            return response()->json($this->service->paginate($filtros, $perPage));
+        }
+
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'personal_id' => 'required|integer|exists:personal,id',
+            'fecha' => 'required|date',
+            'hora_entrada' => 'nullable|date_format:H:i:s|required_without:hora_salida',
+            'hora_salida' => 'nullable|date_format:H:i:s',
+            'estado' => 'nullable|in:presente,ausente,tardia,justificado,permiso,comision,vacaciones',
+            'descripcion_justificacion' => 'nullable|string',
+        ]);
+
+        // registrado_por = auth user si viene por token, permite que admin/directivo marque por otro
+        $data['registrado_por'] = $request->user()?->id;
+
+        $model = $this->service->create(AsistenciaPersonalDTO::fromArray($data));
+
+        return response()->json($model->load(['personal', 'registradoPor', 'archivos']), 201);
+    }
+
+    public function marcar(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'fecha' => 'required|date',
+            'hora_entrada' => 'nullable|date_format:H:i:s|required_without:hora_salida',
+            'hora_salida' => 'nullable|date_format:H:i:s',
+            'estado' => 'nullable|in:presente,ausente,tardia,justificado,permiso,comision,vacaciones',
+            'descripcion_justificacion' => 'nullable|string',
+        ]);
+
+        $model = $this->service->marcarPropia($request->user()->id, AsistenciaPersonalDTO::fromArray($data));
+
+        return response()->json($model->load(['personal', 'registradoPor']), 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'personal_id' => 'sometimes|integer|exists:personal,id',
+            'fecha' => 'sometimes|date',
+            'hora_entrada' => 'nullable|date_format:H:i:s',
+            'hora_salida' => 'nullable|date_format:H:i:s',
+            'estado' => 'nullable|in:presente,ausente,tardia,justificado,permiso,comision,vacaciones',
+            'descripcion_justificacion' => 'nullable|string',
+        ]);
+
+        $model = $this->service->update($id, AsistenciaPersonalDTO::fromArray($data));
+
+        return response()->json($model->load(['personal', 'archivos']));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Asistencia de personal eliminada correctamente']);
+    }
+
+    public function restore(int $id): JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function justificar(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'descripcion_justificacion' => 'nullable|string',
+            'archivos' => 'nullable|array',
+            'archivos.*' => 'file|max:5120|mimes:pdf,jpg,jpeg,png,doc,docx',
+        ]);
+
+        $archivos = $request->file('archivos', []);
+        if (!is_array($archivos)) {
+            $archivos = [$archivos];
+        }
+
+        $model = $this->service->justificar($id, $request->input('descripcion_justificacion'), $archivos);
+
+        return response()->json($model);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Services\AuditoriaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class AuditoriaController extends Controller
+{
+    public function __construct(private readonly AuditoriaService $service) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $request->validate([
+            'tabla' => 'nullable|string|max:50',
+            'accion' => 'nullable|in:create,update,delete,restore,login,logout',
+            'usuario_id' => 'nullable|integer|exists:users,id',
+            'registro_id' => 'nullable|integer',
+            'desde' => 'nullable|date',
+            'hasta' => 'nullable|date|after_or_equal:desde',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        return response()->json($this->service->paginate($request));
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+
+class AuthController extends Controller
+{
+    public function register(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'email' => 'required|string|email|max:150|unique:users,email',
+            'password' => ['required', Password::min(8)],
+            'rol_id' => 'nullable|integer|exists:roles,id',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+        ]);
+
+        $data['password'] = Hash::make($data['password']);
+
+        $user = \App\Models\User::query()->create($data);
+
+        $token = $user->createToken('sigel-ega')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user->load(['rol', 'estado']),
+        ], 201);
+    }
+
+    public function login(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => 'required|string|email|max:150',
+            'password' => 'required|string',
+        ]);
+
+        if (! Auth::attempt($data, true)) {
+            return response()->json(['message' => 'Credenciales incorrectas'], 401);
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken('sigel-ega')->plainTextToken;
+        \App\Models\Auditoria::create([
+            'usuario_id' => $user->id,
+            'accion' => 'login',
+            'tabla' => 'users',
+            'registro_id' => $user->id,
+            'payload' => ['email' => $user->email],
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            'origen' => 'api',
+        ]);
+
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user->load(['rol', 'estado']),
+        ]);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json($request->user()->load(['rol', 'estado']));
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $uid = $request->user()->id;
+        $request->user()->currentAccessToken()?->delete();
+        \App\Models\Auditoria::create([
+            'usuario_id' => $uid,
+            'accion' => 'logout',
+            'tabla' => 'users',
+            'registro_id' => $uid,
+            'payload' => null,
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            'origen' => 'api',
+        ]);
+
+        return response()->json(['message' => 'Sesión cerrada correctamente']);
+    }
+}<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\CalificacionDTO;
+use App\Http\Controllers\Controller;
+use App\Services\CalificacionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class CalificacionController extends Controller
+{
+    public function __construct(private readonly CalificacionService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'matricula_id' => 'required|integer|exists:matriculas,id',
+            'area_id' => 'required|integer|exists:areas,id',
+            'tipo_evaluacion_id' => 'required|integer|exists:tipos_evaluacion,id',
+            'nota' => 'nullable|numeric|between:0,20',
+            'nivel_logro' => 'nullable|in:AD,A,B,C',
+            'escala' => 'nullable|in:literal,vigesimal',
+            'es_nota_c' => 'nullable|boolean',
+            'motivo_nota_c' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(CalificacionDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'matricula_id' => 'sometimes|integer|exists:matriculas,id',
+            'area_id' => 'sometimes|integer|exists:areas,id',
+            'tipo_evaluacion_id' => 'sometimes|integer|exists:tipos_evaluacion,id',
+            'nota' => 'nullable|numeric|between:0,20',
+            'nivel_logro' => 'nullable|in:AD,A,B,C',
+            'escala' => 'nullable|in:literal,vigesimal',
+            'es_nota_c' => 'nullable|boolean',
+            'motivo_nota_c' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, CalificacionDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Calificación eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\ConfiguracionDTO;
+use App\Http\Controllers\Controller;
+use App\Services\ConfiguracionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class ConfiguracionController extends Controller
+{
+    public function __construct(private readonly ConfiguracionService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'clave' => 'required|string|max:100|unique:configuraciones,clave',
+            'valor' => 'required|string',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(ConfiguracionDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'clave' => 'sometimes|string|max:100|unique:configuraciones,clave,$id,id',
+            'valor' => 'sometimes|string',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, ConfiguracionDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Configuración eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\DocenteDTO;
+use App\Http\Controllers\Controller;
+use App\Services\DocenteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class DocenteController extends Controller
+{
+    public function __construct(private readonly DocenteService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'dni' => 'required|string|size:8|unique:docentes,dni',
+            'nombres' => 'required|string|max:150',
+            'apellidos' => 'required|string|max:150',
+            'especialidad' => 'nullable|string|max:100',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+        ]);
+
+        $model = $this->service->create(DocenteDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'dni' => 'sometimes|string|size:8|unique:docentes,dni,$id,id',
+            'nombres' => 'sometimes|string|max:150',
+            'apellidos' => 'sometimes|string|max:150',
+            'especialidad' => 'nullable|string|max:100',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+        ]);
+
+        $model = $this->service->update($id, DocenteDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Docente eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\DocumentoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\DocumentoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class DocumentoController extends Controller
+{
+    public function __construct(private readonly DocumentoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tipo_documento_id' => 'required|integer|exists:tipos_documento,id',
+            'numero' => 'nullable|string|max:50',
+            'asunto' => 'required|string|max:255',
+            'destinatario' => 'nullable|string|max:200',
+            'fecha' => 'nullable|date',
+            'ruta_archivo' => 'nullable|string|max:500',
+            'usuario_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $model = $this->service->create(DocumentoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'tipo_documento_id' => 'sometimes|integer|exists:tipos_documento,id',
+            'numero' => 'nullable|string|max:50',
+            'asunto' => 'sometimes|string|max:255',
+            'destinatario' => 'nullable|string|max:200',
+            'fecha' => 'nullable|date',
+            'ruta_archivo' => 'nullable|string|max:500',
+            'usuario_id' => 'nullable|integer|exists:users,id',
+        ]);
+
+        $model = $this->service->update($id, DocumentoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Documento eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\EstadoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\EstadoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class EstadoController extends Controller
+{
+    public function __construct(private readonly EstadoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:estados,nombre',
+            'tipo_aplica' => 'required|string|max:50',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(EstadoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:estados,nombre,$id,id',
+            'tipo_aplica' => 'sometimes|string|max:50',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, EstadoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Estado eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\EstudianteDTO;
+use App\Http\Controllers\Controller;
+use App\Services\EstudianteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class EstudianteController extends Controller
+{
+    public function __construct(private readonly EstudianteService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'codigo_estudiante' => 'nullable|string|max:30|unique:estudiantes,codigo_estudiante',
+            'dni' => 'nullable|string|size:8|unique:estudiantes,dni',
+            'nombres' => 'required|string|max:150',
+            'apellidos' => 'required|string|max:150',
+            'fecha_nacimiento' => 'nullable|date',
+            'sexo' => 'nullable|in:M,F',
+            'direccion' => 'nullable|string|max:200',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+            'nivel_id' => 'nullable|integer|exists:niveles,id',
+            'grado_id' => 'nullable|integer|exists:grados,id',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'apoderado_id' => 'nullable|integer|exists:apoderados,id',
+        ]);
+
+        $model = $this->service->create(EstudianteDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'codigo_estudiante' => 'nullable|string|max:30|unique:estudiantes,codigo_estudiante,$id,id',
+            'dni' => 'nullable|string|size:8|unique:estudiantes,dni,$id,id',
+            'nombres' => 'sometimes|string|max:150',
+            'apellidos' => 'sometimes|string|max:150',
+            'fecha_nacimiento' => 'nullable|date',
+            'sexo' => 'nullable|in:M,F',
+            'direccion' => 'nullable|string|max:200',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+            'nivel_id' => 'nullable|integer|exists:niveles,id',
+            'grado_id' => 'nullable|integer|exists:grados,id',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'apoderado_id' => 'nullable|integer|exists:apoderados,id',
+        ]);
+
+        $model = $this->service->update($id, EstudianteDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Estudiante eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\GradoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\GradoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class GradoController extends Controller
+{
+    public function __construct(private readonly GradoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nivel_id' => 'required|integer|exists:niveles,id',
+            'nombre' => 'required|string|max:100',
+        ]);
+
+        $model = $this->service->create(GradoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nivel_id' => 'sometimes|integer|exists:niveles,id',
+            'nombre' => 'sometimes|string|max:100',
+        ]);
+
+        $model = $this->service->update($id, GradoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Grado eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\MatriculaDTO;
+use App\Http\Controllers\Controller;
+use App\Services\MatriculaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class MatriculaController extends Controller
+{
+    public function __construct(private readonly MatriculaService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'estudiante_id' => 'required|integer|exists:estudiantes,id',
+            'seccion_id' => 'required|integer|exists:secciones,id',
+            'periodo_id' => 'required|integer|exists:periodos,id',
+            'tipo_matricula_id' => 'required|integer|exists:tipos_matricula,id',
+            'fecha' => 'nullable|date',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $model = $this->service->create(MatriculaDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'estudiante_id' => 'sometimes|integer|exists:estudiantes,id',
+            'seccion_id' => 'sometimes|integer|exists:secciones,id',
+            'periodo_id' => 'sometimes|integer|exists:periodos,id',
+            'tipo_matricula_id' => 'sometimes|integer|exists:tipos_matricula,id',
+            'fecha' => 'nullable|date',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $model = $this->service->update($id, MatriculaDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Matrícula eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\NecesidadEspecialDTO;
+use App\Http\Controllers\Controller;
+use App\Services\NecesidadEspecialService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class NecesidadEspecialController extends Controller
+{
+    public function __construct(private readonly NecesidadEspecialService $service) {}
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'estudiante_id' => ['required','integer','exists:estudiantes,id'],
+            'servicio' => ['required','in:SAANEE,SEHO,SAE,OTRO'],
+            'tipo_nee' => ['required','string','max:150'],
+            'descripcion' => ['nullable','string'],
+            'certificado_salud' => ['nullable','string','max:500'],
+            'registro_solicitud' => ['nullable','string','max:150'],
+            'estado_seho' => ['nullable','in:pendiente,en_atencion,atendido,reincorporado'],
+            'codigo_seho' => ['nullable','string','max:100'],
+            'nombre_seho' => ['nullable','string','max:200'],
+            'fecha_solicitud' => ['nullable','date'],
+            'fecha_reincorporacion' => ['nullable','date'],
+            'reincorporado' => ['nullable','boolean'],
+            'poi_ruta' => ['nullable','string','max:500'],
+            'evaluacion_psicopedagogica_ruta' => ['nullable','string','max:500'],
+            'ajustes_razonables' => ['nullable','string'],
+            'docente_sanee' => ['nullable','string','max:200'],
+            'observaciones' => ['nullable','string'],
+        ]);
+        $model = $this->service->create(NecesidadEspecialDTO::fromArray($data));
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'estudiante_id' => ['sometimes','integer','exists:estudiantes,id'],
+            'servicio' => ['sometimes','in:SAANEE,SEHO,SAE,OTRO'],
+            'tipo_nee' => ['sometimes','string','max:150'],
+            'descripcion' => ['nullable','string'],
+            'certificado_salud' => ['nullable','string','max:500'],
+            'registro_solicitud' => ['nullable','string','max:150'],
+            'estado_seho' => ['nullable','in:pendiente,en_atencion,atendido,reincorporado'],
+            'codigo_seho' => ['nullable','string','max:100'],
+            'nombre_seho' => ['nullable','string','max:200'],
+            'fecha_solicitud' => ['nullable','date'],
+            'fecha_reincorporacion' => ['nullable','date'],
+            'reincorporado' => ['nullable','boolean'],
+            'poi_ruta' => ['nullable','string','max:500'],
+            'evaluacion_psicopedagogica_ruta' => ['nullable','string','max:500'],
+            'ajustes_razonables' => ['nullable','string'],
+            'docente_sanee' => ['nullable','string','max:200'],
+            'observaciones' => ['nullable','string'],
+        ]);
+        return response()->json($this->service->update($id, NecesidadEspecialDTO::fromArray($data)));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+        return response()->json(['message' => 'Necesidad especial eliminada.']);
+    }
+
+    public function restore(int $id): JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\NivelDTO;
+use App\Http\Controllers\Controller;
+use App\Services\NivelService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class NivelController extends Controller
+{
+    public function __construct(private readonly NivelService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:niveles,nombre',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(NivelDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:niveles,nombre,$id,id',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, NivelDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Nivel eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\PadreDTO;
+use App\Http\Controllers\Controller;
+use App\Services\PadreService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class PadreController extends Controller
+{
+    public function __construct(private readonly PadreService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'dni' => 'required|string|size:8|unique:padres,dni',
+            'nombres' => 'required|string|max:150',
+            'apellidos' => 'required|string|max:150',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+            'direccion' => 'nullable|string|max:200',
+            'ocupacion' => 'nullable|string|max:100',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'apoderado_id' => 'nullable|integer|exists:apoderados,id',
+        ]);
+
+        $model = $this->service->create(PadreDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'dni' => 'sometimes|string|size:8|unique:padres,dni,$id,id',
+            'nombres' => 'sometimes|string|max:150',
+            'apellidos' => 'sometimes|string|max:150',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:100',
+            'direccion' => 'nullable|string|max:200',
+            'ocupacion' => 'nullable|string|max:100',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'apoderado_id' => 'nullable|integer|exists:apoderados,id',
+        ]);
+
+        $model = $this->service->update($id, PadreDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Padre de Familia eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\ParentescoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\ParentescoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class ParentescoController extends Controller
+{
+    public function __construct(private readonly ParentescoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:parentescos,nombre',
+        ]);
+
+        $model = $this->service->create(ParentescoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:parentescos,nombre,$id,id',
+        ]);
+
+        $model = $this->service->update($id, ParentescoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Parentesco eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\PeriodoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\PeriodoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class PeriodoController extends Controller
+{
+    public function __construct(private readonly PeriodoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:50',
+            'anio' => 'required|integer|min:2000|max:2100',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date',
+            'activo' => 'nullable|boolean',
+        ]);
+
+        $model = $this->service->create(PeriodoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:50',
+            'anio' => 'sometimes|integer|min:2000|max:2100',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin' => 'nullable|date',
+            'activo' => 'nullable|boolean',
+        ]);
+
+        $model = $this->service->update($id, PeriodoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Periodo eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\PersonalDTO;
+use App\Http\Controllers\Controller;
+use App\Services\PersonalService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class PersonalController extends Controller
+{
+    public function __construct(private readonly PersonalService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'dni' => 'required|string|size:8|unique:personal,dni',
+            'nombres' => 'required|string|max:100',
+            'apellidos' => 'required|string|max:100',
+            'categoria' => 'required|in:docente,directivo,administrativo,servicio',
+            'cargo' => 'nullable|string|max:100',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:150',
+            'fecha_ingreso' => 'nullable|date',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'user_id' => 'nullable|integer|exists:users,id|unique:personal,user_id',
+            'foto' => 'nullable|string|max:500',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $model = $this->service->create(PersonalDTO::fromArray($data));
+
+        return response()->json($model->load(['estado', 'usuario']), 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'dni' => 'sometimes|string|size:8|unique:personal,dni,' . $id . ',id',
+            'nombres' => 'sometimes|string|max:100',
+            'apellidos' => 'sometimes|string|max:100',
+            'categoria' => 'sometimes|in:docente,directivo,administrativo,servicio',
+            'cargo' => 'nullable|string|max:100',
+            'telefono' => 'nullable|string|max:20',
+            'email' => 'nullable|string|email|max:150',
+            'fecha_ingreso' => 'nullable|date',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+            'user_id' => 'nullable|integer|exists:users,id|unique:personal,user_id,' . $id . ',id',
+            'foto' => 'nullable|string|max:500',
+            'observaciones' => 'nullable|string',
+        ]);
+
+        $model = $this->service->update($id, PersonalDTO::fromArray($data));
+
+        return response()->json($model->load(['estado', 'usuario']));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Personal eliminado correctamente']);
+    }
+
+    public function restore(int $id): JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function asistencias(int $id): JsonResponse
+    {
+        return response()->json($this->service->getAsistencias($id));
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\ReporteDTO;
+use App\Http\Controllers\Controller;
+use App\Services\ReporteService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class ReporteController extends Controller
+{
+    public function __construct(private readonly ReporteService $service) {}
+
+    public function index(Request $request): JsonResponse
+    {
+        $request->validate([
+            'tipo' => 'nullable|string|max:50',
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+            'seccion_id' => 'nullable|integer|exists:secciones,id',
+            'formato' => 'nullable|in:pdf,excel,csv',
+            'desde' => 'nullable|date',
+            'hasta' => 'nullable|date|after_or_equal:desde',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        return response()->json($this->service->paginate($request));
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tipo' => 'required|string|max:50',
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+            'seccion_id' => 'nullable|integer|exists:secciones,id',
+            'formato' => 'nullable|in:pdf,excel,csv',
+            'parametros' => 'nullable|array',
+        ]);
+        $data['generado_por'] = $request->user()?->id;
+
+        return response()->json($this->service->generar(ReporteDTO::fromArray($data)), 201);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Reporte eliminado correctamente.']);
+    }
+
+    public function restore(int $id): JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\RolDTO;
+use App\Http\Controllers\Controller;
+use App\Services\RolService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class RolController extends Controller
+{
+    public function __construct(private readonly RolService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:roles,nombre',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(RolDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:roles,nombre,$id,id',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, RolDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Rol eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\SeccionDTO;
+use App\Http\Controllers\Controller;
+use App\Services\SeccionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class SeccionController extends Controller
+{
+    public function __construct(private readonly SeccionService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'grado_id' => 'required|integer|exists:grados,id',
+            'nombre' => 'required|string|max:10',
+            'turno' => 'required|in:manana,tarde',
+            'vacantes' => 'required|integer|min:0',
+            'docente_id' => 'nullable|integer|exists:docentes,id',
+        ]);
+
+        $model = $this->service->create(SeccionDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'grado_id' => 'sometimes|integer|exists:grados,id',
+            'nombre' => 'sometimes|string|max:10',
+            'turno' => 'sometimes|in:manana,tarde',
+            'vacantes' => 'sometimes|integer|min:0',
+            'docente_id' => 'nullable|integer|exists:docentes,id',
+        ]);
+
+        $model = $this->service->update($id, SeccionDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Sección eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Seccion;
+use App\Models\Periodo;
+
+class SiagieController extends Controller
+{
+    /**
+     * Importa plantilla SIAGIE (Excel). El nombre del archivo NO debe modificarse (criterio acta 2.0).
+     * Valida AD/A/B/C + 0-20 + nota C con motivo.
+     */
+    public function import(Request $request): JsonResponse
+    {
+        $request->validate([
+            'archivo' => 'required|file|mimes:xlsx,xls,csv,txt|max:5120',
+            'periodo_id' => 'required|exists:periodos,id',
+            'seccion_id' => 'required|exists:secciones,id',
+        ]);
+
+        $file = $request->file('archivo');
+        $originalName = $file->getClientOriginalName();
+        $ext = strtolower($file->getClientOriginalExtension());
+        $path = $file->storeAs('siagie/imports/'.$request->periodo_id.'/'.$request->seccion_id, $originalName);
+
+        $imported = 0; $errors = [];
+        $rows = [];
+        // XLSX/XLS con PhpSpreadsheet (ext-gd ahora disponible vía --ignore-platform-reqs)
+        if (in_array($ext, ['xlsx','xls'])) {
+            try {
+                $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+                $sheet = $spreadsheet->getActiveSheet();
+                $data = $sheet->toArray(null, true, true, true);
+                if (empty($data)) throw new \Exception('Excel vacío');
+                $firstRow = array_shift($data);
+                $header = array_map(fn($h)=> strtolower(trim((string)$h)), array_values($firstRow));
+                foreach ($data as $excelRow) {
+                    $vals = array_values($excelRow);
+                    if (count(array_filter($vals, fn($v)=> $v!==null && $v!==''))===0) continue;
+                    $row = @array_combine($header, array_slice($vals, 0, count($header)));
+                    if ($row) $rows[] = $row;
+                }
+            } catch (\Exception $e) {
+                $errors[] = 'Excel: '.$e->getMessage();
+            }
+        }
+        if ($ext === 'csv' || $ext === 'txt') {
+            $content = file_get_contents($file->getRealPath());
+            $lines = preg_split('/\r\n|\n|\r/', trim($content));
+            $header = str_getcsv(array_shift($lines) ?? '');
+            $header = array_map(fn($h)=> strtolower(trim($h)), $header);
+            foreach ($lines as $idx=>$line) {
+                if (! trim($line)) continue;
+                $row = array_combine($header, str_getcsv($line));
+                if (! $row) { $errors[] = 'Línea '.($idx+2).': columnas no coinciden'; continue; }
+                $rows[] = $row;
+            }
+        }
+        // Ejecutar import literal CNEB sobre $rows (AD/A/B/C + motivo)
+        foreach ($rows as $idx=>$row) {
+                try {
+                    $dni = $row['dni'] ?? $row['codigo'] ?? $row['codigo_estudiante'] ?? null;
+                    // robustez: PhpSpreadsheet entrega floats para notas/dni
+                    $nivel = strtoupper(trim((string)($row['nivel_logro'] ?? $row['nivel'] ?? '')));
+                    $nota = $row['nota'] ?? null;
+                    if ($nota !== null && $nota !== '') $nota = (string)$nota;
+                    if ($nivel && ! in_array($nivel, ['AD','A','B','C'], true)) { throw new \Exception('nivel_logro debe ser AD/A/B/C'); }
+                    if ($nivel === 'C' && empty(trim((string)($row['motivo_c'] ?? $row['motivo'] ?? '')) )) { throw new \Exception('C exige motivo_c'); }
+                    // buscar matricula por dni en la sección/periodo
+                    $est = $dni ? \App\Models\Estudiante::where('dni', $dni)->orWhere('codigo_estudiante', $dni)->first() : null;
+                    if (! $est) { throw new \Exception('Estudiante no encontrado para dni/codigo '.$dni); }
+                    $mat = \App\Models\Matricula::where('estudiante_id', $est->id)->where('seccion_id', $request->seccion_id)->where('periodo_id', $request->periodo_id)->first();
+                    if (! $mat) { throw new \Exception('Matrícula no encontrada para estudiante '.$est->id.' en seccion/periodo dado'); }
+                    $payload = [
+                        'matricula_id' => $mat->id,
+                        'area_id' => (int) ($row['area_id'] ?? 1),
+                        'tipo_evaluacion_id' => (int) ($row['tipo_evaluacion_id'] ?? 1),
+                        'nivel_logro' => $nivel ?: null,
+                        'escala' => $nivel ? 'literal' : 'vigesimal',
+                        'nota' => ($nivel ? null : ($nota !== '' ? (float)$nota : null)),
+                        'es_nota_c' => $nivel === 'C',
+                        'motivo_nota_c' => $row['motivo_c'] ?? $row['motivo'] ?? null,
+                    ];
+                    app(\App\Services\CalificacionService::class)->create(\App\DTOs\CalificacionDTO::fromArray($payload));
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = 'Línea '.($idx+2).': '.$e->getMessage();
+                }
+            }
+        if (in_array($ext, ['xlsx','xls']) && empty($rows) && empty($errors)) {
+            $errors[] = 'Excel sin filas de datos (verifique header: dni,area_id,tipo_evaluacion_id,nivel_logro,motivo_c)';
+        }
+
+        return response()->json([
+            'message' => $imported ? 'Importación completada' : 'Plantilla recibida (nombre preservado).',
+            'archivo' => $originalName,
+            'ruta' => $path,
+            'periodo_id' => (int) $request->periodo_id,
+            'seccion_id' => (int) $request->seccion_id,
+            'importados' => $imported,
+            'errores' => $errors,
+        ], 201);
+    }
+
+    public function export(Request $request, int $seccion, ?int $periodo = null): \Symfony\Component\HttpFoundation\StreamedResponse|JsonResponse|\Illuminate\Http\Response
+    {
+        $sec = Seccion::with('grado.nivel')->findOrFail($seccion);
+        $per = $periodo ? Periodo::findOrFail($periodo) : Periodo::where('activo', true)->first();
+        if (! $per) {
+            return response()->json(['message' => 'Periodo no encontrado o no activo.'], 404);
+        }
+        $formato = $request->query('formato', 'csv');
+        if ($formato === 'json') {
+            $cals = \App\Models\Calificacion::with(['matricula.estudiante','area'])
+                ->whereHas('matricula', fn($q)=> $q->where('seccion_id',$seccion)->where('periodo_id',$per->id))->get();
+            return response()->json(['seccion'=>$sec,'periodo'=>$per,'calificaciones'=>$cals]);
+        }
+        $cals = \App\Models\Calificacion::with(['matricula.estudiante','area','tipoEvaluacion'])
+            ->whereHas('matricula', fn($q)=> $q->where('seccion_id',$seccion)->where('periodo_id',$per->id))->get();
+        if ($formato === 'xlsx') {
+            $ss = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sh = $ss->getActiveSheet();
+            $sh->setTitle('SIAGIE '.$sec->grado->nombre);
+            $conf = \App\Models\Configuracion::where('clave','nombre_institucion')->first();
+            $ie = $conf->valor ?? 'I.E. EGA';
+            $sh->setCellValue('A1', $ie.' — Registro Auxiliar '.$sec->grado->nivel->nombre.' '.$sec->grado->nombre.' '.$sec->nombre.' — '.$per->nombre);
+            $sh->mergeCells('A1:J1'); $sh->getStyle('A1')->getFont()->setBold(true)->setSize(11)->getColor()->setRGB('1E3A8A'); $sh->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $header = ['DNI','Código','Apellidos y Nombres','Área','Tipo Eval','Nivel','Nota','Escala','Motivo C','ID Área'];
+            $col = 'A'; foreach ($header as $h) { $sh->setCellValue($col.'2', $h); $col++; }
+            $styleH = $sh->getStyle('A2:J2'); $styleH->getFont()->setBold(true)->getColor()->setRGB('FFFFFF'); $styleH->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('1E3A8A'); $styleH->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $row = 3; foreach ($cals as $c) {
+                $est = $c->matricula->estudiante ?? null;
+                $sh->setCellValue('A'.$row, $est->dni ?? ''); $sh->setCellValue('B'.$row, $est->codigo_estudiante ?? ''); $sh->setCellValue('C'.$row, trim(($est->apellidos ?? '').' '.($est->nombres ?? '')));
+                $sh->setCellValue('D'.$row, $c->area->nombre ?? ''); $sh->setCellValue('E'.$row, $c->tipo_evaluacion_id); $sh->setCellValue('F'.$row, $c->nivel_logro ?? ''); $sh->setCellValue('G'.$row, $c->nota ?? ''); $sh->setCellValue('H'.$row, $c->escala ?? ''); $sh->setCellValue('I'.$row, $c->motivo_nota_c ?? ''); $sh->setCellValue('J'.$row, $c->area_id);
+                if (($c->nivel_logro ?? '') === 'C') { $sh->getStyle('F'.$row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('FECACA'); $sh->getStyle('F'.$row)->getFont()->getColor()->setRGB('991B1B'); }
+                if ($row %2===0) $sh->getStyle('A'.$row.':J'.$row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('F8FAFC');
+                $row++;
+            }
+            foreach (range('A','J') as $col) $sh->getColumnDimension($col)->setAutoSize(true);
+            $sh->getStyle('A2:J'.($row-1))->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
+            $sh->freezePane('A3');
+            $filename = 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id.'_'.date('Ymd').'.xlsx';
+            return response()->streamDownload(function () use ($ss) { $w = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($ss); $w->save('php://output'); }, $filename, ['Content-Type'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        }
+        if ($formato === 'pdf') {
+            $conf = \App\Models\Configuracion::where('clave','nombre_institucion')->first();
+            $ie = $conf->valor ?? 'I.E. EGA';
+            $html = '<html><head><meta charset=\"utf-8\"><style>body{font-family: DejaVu Sans, sans-serif; font-size:9px} h1{color:#1E3A8A; font-size:14px; text-align:center; margin:0} h2{color:#334155; font-size:10px; text-align:center; margin:2px 0 8px} table{width:100%; border-collapse:collapse} th{background:#1E3A8A; color:#fff; padding:4px; text-align:center} td{padding:3px; border:1px solid #CBD5E1} tr:nth-child(even){background:#F8FAFC} .c{background:#FECACA; color:#991B1B; font-weight:bold; text-align:center}</style></head><body>';
+            $html .= '<h1>'.htmlspecialchars($ie).'</h1><h2>Registro Auxiliar — '.htmlspecialchars($sec->grado->nivel->nombre.' '.$sec->grado->nombre.' '.$sec->nombre).' — '.htmlspecialchars($per->nombre).' — '.date('d/m/Y').'</h2>';
+            $html .= '<table><tr><th>#</th><th>DNI</th><th>Estudiante</th><th>Área</th><th>Nivel</th><th>Nota</th><th>Escala</th><th>Motivo C</th></tr>';
+            $i=1; foreach ($cals as $c) { $est=$c->matricula->estudiante; $cls=($c->nivel_logro==='C'?' class=\"c\"':''); $html .= '<tr><td>'.$i++.'</td><td>'.htmlspecialchars($est->dni ?? '').'</td><td>'.htmlspecialchars(trim(($est->apellidos ?? '').' '.($est->nombres ?? ''))).'</td><td>'.htmlspecialchars($c->area->nombre ?? '').'</td><td'.$cls.'>'.htmlspecialchars($c->nivel_logro ?? '').'</td><td>'.htmlspecialchars((string)($c->nota ?? '')).'</td><td>'.htmlspecialchars($c->escala ?? '').'</td><td>'.htmlspecialchars($c->motivo_nota_c ?? '').'</td></tr>'; }
+            $html .= '</table><p style=\"font-size:7px; color:#64748B; text-align:center; margin-top:10px\">SIGEL-EGA — Generado '.date('d/m/Y H:i').' — '.$ie.'</p></body></html>';
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4','landscape');
+            $filename = 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id.'_'.date('Ymd').'.pdf';
+            return $pdf->download($filename);
+        }
+        $filename = 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id.'_'.date('Ymd').'.csv';
+        return response()->streamDownload(function () use ($cals) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['dni','codigo_estudiante','apellidos_nombres','area_id','area','tipo_evaluacion_id','nivel_logro','nota','escala','motivo_c']);
+            foreach ($cals as $c) {
+                $est = $c->matricula->estudiante ?? null;
+                fputcsv($out, [
+                    $est->dni ?? '', $est->codigo_estudiante ?? '', trim(($est->apellidos ?? '').' '.($est->nombres ?? '')),
+                    $c->area_id, $c->area->nombre ?? '', $c->tipo_evaluacion_id,
+                    $c->nivel_logro ?? '', $c->nota ?? '', $c->escala ?? 'literal', $c->motivo_nota_c ?? '',
+                ]);
+            }
+            fclose($out);
+        }, $filename, ['Content-Type'=>'text/csv; charset=UTF-8']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\TipoDocumentoDTO;
+use App\Http\Controllers\Controller;
+use App\Services\TipoDocumentoService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class TipoDocumentoController extends Controller
+{
+    public function __construct(private readonly TipoDocumentoService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:tipos_documento,nombre',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(TipoDocumentoDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:tipos_documento,nombre,$id,id',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, TipoDocumentoDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Tipo de Documento eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\TipoEvaluacionDTO;
+use App\Http\Controllers\Controller;
+use App\Services\TipoEvaluacionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class TipoEvaluacionController extends Controller
+{
+    public function __construct(private readonly TipoEvaluacionService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:tipos_evaluacion,nombre',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(TipoEvaluacionDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:tipos_evaluacion,nombre,$id,id',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, TipoEvaluacionDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Tipo de Evaluación eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\TipoMatriculaDTO;
+use App\Http\Controllers\Controller;
+use App\Services\TipoMatriculaService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class TipoMatriculaController extends Controller
+{
+    public function __construct(private readonly TipoMatriculaService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'required|string|max:100|unique:tipos_matricula,nombre',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->create(TipoMatriculaDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'nombre' => 'sometimes|string|max:100|unique:tipos_matricula,nombre,$id,id',
+            'descripcion' => 'nullable|string|max:255',
+        ]);
+
+        $model = $this->service->update($id, TipoMatriculaDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Tipo de Matrícula eliminado correctamente']);
+    }
+}
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\DTOs\UserDTO;
+use App\Http\Controllers\Controller;
+use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class UserController extends Controller
+{
+    public function __construct(private readonly UserService $service)
+    {
+    }
+
+    public function index(): JsonResponse
+    {
+        return response()->json($this->service->getAll());
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'email' => 'required|string|email|max:150|unique:users,email',
+            'password' => 'required|string|min:8',
+            'rol_id' => 'nullable|integer|exists:roles,id',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+        ]);
+
+        $model = $this->service->create(UserDTO::fromArray($data));
+
+        return response()->json($model, 201);
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        return response()->json($this->service->getById($id));
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'name' => 'sometimes|string|max:150',
+            'email' => 'sometimes|string|email|max:150|unique:users,email,$id,id',
+            'password' => 'sometimes|string|min:8',
+            'rol_id' => 'nullable|integer|exists:roles,id',
+            'estado_id' => 'nullable|integer|exists:estados,id',
+        ]);
+
+        $model = $this->service->update($id, UserDTO::fromArray($data));
+
+        return response()->json($model);
+    }
+
+    public function restore(int $id): \Illuminate\Http\JsonResponse
+    {
+        return response()->json($this->service->restore($id));
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $this->service->delete($id);
+
+        return response()->json(['message' => 'Usuario eliminado correctamente']);
+    }
+}

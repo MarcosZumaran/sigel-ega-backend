@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Exceptions\EnUsoException;
 use App\Exceptions\NotFoundException;
 use App\Models\Apoderado;
+use App\Models\Estudiante;
+use App\Models\Padre;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -71,6 +73,44 @@ class ApoderadoService
     public function getEstudiantes(int $id): Collection
     {
         return $this->getById($id)->estudiantes;
+    }
+
+    public function attachPadre(int $id, int $padreId): Padre
+    {
+        $this->getById($id);
+        $padre = Padre::find($padreId);
+        if (! $padre) {
+            throw new NotFoundException('Padre de Familia', $padreId);
+        }
+        $padre->apoderado_id = $id;
+        $padre->save();
+
+        return $padre->refresh();
+    }
+
+    public function detachPadre(int $id, int $padreId): void
+    {
+        $this->getById($id);
+        Padre::whereKey($padreId)->where('apoderado_id', $id)->update(['apoderado_id' => null]);
+    }
+
+    public function attachEstudiante(int $id, int $estudianteId): Estudiante
+    {
+        $this->getById($id);
+        $estudiante = Estudiante::find($estudianteId);
+        if (! $estudiante) {
+            throw new NotFoundException('Estudiante', $estudianteId);
+        }
+        $estudiante->apoderado_id = $id;
+        $estudiante->save();
+
+        return $estudiante->refresh();
+    }
+
+    public function detachEstudiante(int $id, int $estudianteId): void
+    {
+        $this->getById($id);
+        Estudiante::whereKey($estudianteId)->where('apoderado_id', $id)->update(['apoderado_id' => null]);
     }
 
     public function restore(int $id): Apoderado

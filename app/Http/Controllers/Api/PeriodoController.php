@@ -58,6 +58,27 @@ class PeriodoController extends Controller
         return response()->json($this->service->restore($id));
     }
 
+    public function activar(int $id): JsonResponse
+    {
+        $periodo = $this->service->activar($id);
+
+        return response()->json([
+            'message' => "Periodo {$periodo->nombre} activado correctamente.",
+            'periodo' => $periodo,
+        ]);
+    }
+
+    public function promocion(int $id): JsonResponse
+    {
+        $resumen = $this->service->promocionar($id);
+
+        return response()->json([
+            'message' => "Promocion aplicada: {$resumen['promovidos']} promovidos, {$resumen['egresados']} en ultimo grado.",
+            'promovidos' => $resumen['promovidos'],
+            'egresados' => $resumen['egresados'],
+        ]);
+    }
+
     public function destroy(int $id): JsonResponse
     {
         $this->service->delete($id);

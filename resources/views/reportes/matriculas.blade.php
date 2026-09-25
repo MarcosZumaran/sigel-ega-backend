@@ -1,0 +1,5 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><style>body{font-family:DejaVu Sans,sans-serif;font-size:9px;color:#1e293b}h1{color:#1E3A8A;font-size:15px;border-bottom:2px solid #1E3A8A;padding-bottom:4px}table{width:100%;border-collapse:collapse;margin-top:8px}th{background:#1E3A8A;color:#fff;padding:4px 6px;text-align:left}td{padding:3px 6px;border-bottom:1px solid #e2e8f0}</style></head><body>
+<h1>SIGEL-EGA — Reporte de Matrículas</h1><small>Generado: {{ $generado_en }} | Periodo: {{ $periodo->nombre ?? '—' }} @if($seccion)| Sección: {{ $seccion->grado->nombre }}-{{ $seccion->nombre }}@endif</small>
+<table><tr><th>#</th><th>Estudiante</th><th>DNI</th><th>Sección</th><th>Periodo</th></tr>
+@forelse($matriculas as $m)<tr><td>{{ $m->id }}</td><td>{{ $m->estudiante->nombres ?? '' }} {{ $m->estudiante->apellidos ?? '' }}</td><td>{{ $m->estudiante->dni ?? '—' }}</td><td>{{ $m->seccion->grado->nombre ?? '' }}-{{ $m->seccion->nombre ?? '' }}</td><td>{{ $m->periodo->nombre ?? '—' }}</td></tr>@empty<tr><td colspan="5" style="text-align:center;color:#64748b">Sin matrículas</td></tr>@endforelse
+</table></body></html>

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Services\ReporteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReporteController extends Controller
 {
@@ -29,6 +31,22 @@ class ReporteController extends Controller
     public function show(int $id): JsonResponse
     {
         return response()->json($this->service->getById($id));
+    }
+
+    public function descargar(int $id): StreamedResponse|JsonResponse
+    {
+        $rep = $this->service->getById($id);
+        $path = $rep->ruta_archivo;
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            return response()->json(['message' => 'Archivo de reporte no encontrado.'], 404);
+        }
+        $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+            'pdf' => 'application/pdf',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'csv' => 'text/csv; charset=UTF-8',
+            default => 'application/octet-stream',
+        };
+        return Storage::disk('local')->download($path, basename($path), ['Content-Type' => $mime]);
     }
 
     public function store(Request $request): JsonResponse

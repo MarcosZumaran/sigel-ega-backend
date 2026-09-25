@@ -15,9 +15,11 @@ class Asistencia extends Model
     protected $table = 'asistencias';
 
     protected $fillable = [
-        'matricula_id', 
-        'fecha', 
-        'estado'
+        'matricula_id',
+        'fecha',
+        'estado',
+        'motivo_justificacion',
+        'archivo_justificacion',
     ];
 
     protected $with = ['matricula'];

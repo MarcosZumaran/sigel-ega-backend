@@ -67,4 +67,36 @@ class ApoderadoController extends Controller
     {
         return response()->json($this->service->getEstudiantes($id));
     }
+
+    public function attachPadre(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'padre_id' => 'required|integer|exists:padres,id',
+        ]);
+
+        return response()->json($this->service->attachPadre($id, $data['padre_id']));
+    }
+
+    public function detachPadre(int $id, int $padreId): JsonResponse
+    {
+        $this->service->detachPadre($id, $padreId);
+
+        return response()->json(['message' => 'Padre desvinculado correctamente']);
+    }
+
+    public function attachEstudiante(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'estudiante_id' => 'required|integer|exists:estudiantes,id',
+        ]);
+
+        return response()->json($this->service->attachEstudiante($id, $data['estudiante_id']));
+    }
+
+    public function detachEstudiante(int $id, int $estudianteId): JsonResponse
+    {
+        $this->service->detachEstudiante($id, $estudianteId);
+
+        return response()->json(['message' => 'Estudiante desvinculado correctamente']);
+    }
 }

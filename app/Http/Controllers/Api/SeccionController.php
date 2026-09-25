@@ -38,6 +38,19 @@ class SeccionController extends Controller
         return response()->json($this->service->getById($id));
     }
 
+    public function vacantes(int $id): JsonResponse
+    {
+        $seccion = \App\Models\Seccion::findOrFail($id);
+        $ocupadas = \App\Models\Matricula::where('seccion_id', $id)->count();
+        $vacantes = (int) ($seccion->vacantes ?? 0);
+
+        return response()->json([
+            'vacantes' => $vacantes,
+            'ocupadas' => $ocupadas,
+            'disponibles' => max(0, $vacantes - $ocupadas),
+        ]);
+    }
+
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([

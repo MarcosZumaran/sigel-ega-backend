@@ -81,6 +81,9 @@ class AsistenciaService
                 }
             }
         }
+        if (($data['estado'] ?? null) === 'justificado' && empty(trim((string) ($data['motivo_justificacion'] ?? '')))) {
+            throw ValidationException::withMessages(['motivo_justificacion' => 'Justificado exige indicar un motivo.']);
+        }
     }
 
     public function restore(int $id): Asistencia

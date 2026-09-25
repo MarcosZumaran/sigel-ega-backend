@@ -96,6 +96,22 @@ class CalificacionService
         if ($nivel && ! in_array($nivel, ['AD','A','B','C'], true)) {
             throw ValidationException::withMessages(['nivel_logro' => 'Nivel debe ser AD, A, B o C (CNEB).']);
         }
+
+        // Coherencia vigesimal → literal CNEB: 18-20 AD, 14-17 A, 11-13 B, 0-10 C
+        if ($nota !== null && $nivel !== null && $nivel !== '') {
+            $n = (float) $nota;
+            $esperado = match (true) {
+                $n >= 18 => 'AD',
+                $n >= 14 => 'A',
+                $n >= 11 => 'B',
+                default => 'C',
+            };
+            if ($nivel !== $esperado) {
+                throw ValidationException::withMessages([
+                    'nivel_logro' => "Incoherencia CNEB: nota {$nota} corresponde a nivel {$esperado}, no {$nivel} (18-20 AD, 14-17 A, 11-13 B, 0-10 C).",
+                ]);
+            }
+        }
     }
 
     public function restore(int $id): Calificacion

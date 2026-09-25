@@ -24,6 +24,8 @@ class AsistenciaController extends Controller
             'matricula_id' => 'required|integer|exists:matriculas,id',
             'fecha' => 'required|date',
             'estado' => 'required|in:presente,ausente,tardia,justificado',
+            'motivo_justificacion' => 'nullable|string|max:500',
+            'archivo_justificacion' => 'nullable|string|max:255',
         ]);
 
         $model = $this->service->create($data);
@@ -42,6 +44,8 @@ class AsistenciaController extends Controller
             'matricula_id' => 'sometimes|integer|exists:matriculas,id',
             'fecha' => 'sometimes|date',
             'estado' => 'sometimes|in:presente,ausente,tardia,justificado',
+            'motivo_justificacion' => 'nullable|string|max:500',
+            'archivo_justificacion' => 'nullable|string|max:255',
         ]);
 
         $model = $this->service->update($id, $data);

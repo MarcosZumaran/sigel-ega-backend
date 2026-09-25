@@ -18,11 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [
-            \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-        ]);
-
         $middleware->alias(['admin' => \App\Http\Middleware\AdminOnly::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -30,23 +25,35 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
 
-        $exceptions->render(function (NotFoundException $e) {
+        $exceptions->render(function (NotFoundException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 404);
+            }
             return response()->json(['message' => $e->getMessage()], 404);
         });
 
-        $exceptions->render(function (EnUsoException $e) {
+        $exceptions->render(function (EnUsoException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 409);
+            }
             return response()->json(['message' => $e->getMessage()], 409);
         });
 
-        $exceptions->render(function (UniqueConstraintViolationException $e) {
-            return response()->json(['message' => 'Ya existe un registro con los mismos datos.'], 409);
+        $exceptions->render(function (UniqueConstraintViolationException $e, Request $request) {
+            $msg = 'Ya existe un registro con los mismos datos.';
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => $msg], 409);
+            }
+            return response()->json(['message' => $msg], 409);
         });
 
-        $exceptions->render(function (QueryException $e) {
-            if (str_contains($e->getMessage(), 'Integrity constraint violation')) {
-                return response()->json(['message' => 'No se puede eliminar o modificar: existen datos relacionados.'], 409);
+        $exceptions->render(function (QueryException $e, Request $request) {
+            $isIntegrity = str_contains($e->getMessage(), 'Integrity constraint violation');
+            $msg = $isIntegrity ? 'No se puede eliminar o modificar: existen datos relacionados.' : 'Error interno de base de datos.';
+            $code = $isIntegrity ? 409 : 500;
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json(['message' => $msg], $code);
             }
-
-            return response()->json(['message' => 'Error interno de base de datos.'], 500);
+            return response()->json(['message' => $msg], $code);
         });
     })->create();

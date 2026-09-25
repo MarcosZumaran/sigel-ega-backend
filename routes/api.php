@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\ReporteController;
 use App\Http\Controllers\Api\NecesidadEspecialController;
 use App\Http\Controllers\Api\PersonalController;
 use App\Http\Controllers\Api\AsistenciaPersonalController;
+use App\Http\Controllers\Api\EstadisticaController;
 use App\Http\Controllers\Api\SiagieController;
 use App\Http\Controllers\Api\TipoMatriculaController;
 use App\Http\Controllers\Api\UserController;
@@ -105,6 +106,7 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
     Route::prefix('secciones')->whereNumber('id')->group(function () {
         Route::get('/', [SeccionController::class, 'index']);
         Route::get('/{id}', [SeccionController::class, 'show']);
+        Route::get('/{id}/vacantes', [SeccionController::class, 'vacantes']);
         Route::post('/', [SeccionController::class, 'store'])->middleware('admin');
         Route::put('/{id}', [SeccionController::class, 'update'])->middleware('admin');
         Route::patch('/{id}', [SeccionController::class, 'update'])->middleware('admin');
@@ -172,6 +174,8 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
         Route::patch('/{id}', [PeriodoController::class, 'update'])->middleware('admin');
         Route::delete('/{id}', [PeriodoController::class, 'destroy'])->middleware('admin');
         Route::post('/{id}/restore', [PeriodoController::class, 'restore'])->middleware('admin');
+        Route::post('/{id}/activar', [PeriodoController::class, 'activar'])->middleware('admin');
+        Route::post('/{id}/promocion', [PeriodoController::class, 'promocion'])->middleware('admin');
     });
 
     Route::prefix('configuraciones')->whereNumber('id')->group(function () {
@@ -205,6 +209,10 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
         Route::post('/{id}/restore', [ApoderadoController::class, 'restore'])->middleware('admin');
         Route::get('/{id}/padres', [ApoderadoController::class, 'padres']);
         Route::get('/{id}/estudiantes', [ApoderadoController::class, 'estudiantes']);
+        Route::post('/{id}/padres', [ApoderadoController::class, 'attachPadre']);
+        Route::delete('/{id}/padres/{padreId}', [ApoderadoController::class, 'detachPadre'])->whereNumber('padreId');
+        Route::post('/{id}/estudiantes', [ApoderadoController::class, 'attachEstudiante']);
+        Route::delete('/{id}/estudiantes/{estudianteId}', [ApoderadoController::class, 'detachEstudiante'])->whereNumber('estudianteId');
     });
 
     // ============ CORE TRANSACCIONAL ============
@@ -231,6 +239,7 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
     Route::prefix('matriculas')->whereNumber('id')->group(function () {
         Route::get('/', [MatriculaController::class, 'index']);
         Route::post('/', [MatriculaController::class, 'store']);
+        Route::post('/registro', [MatriculaController::class, 'registro']);
         Route::get('/{id}', [MatriculaController::class, 'show']);
         Route::put('/{id}', [MatriculaController::class, 'update']);
         Route::patch('/{id}', [MatriculaController::class, 'update']);
@@ -303,8 +312,18 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
         Route::get('/', [ReporteController::class, 'index']); // historial filtrable (default último año)
         Route::post('/', [ReporteController::class, 'store']); // generar on-demand
         Route::get('/{id}', [ReporteController::class, 'show']);
+        Route::get('/{id}/descargar', [ReporteController::class, 'descargar']);
         Route::delete('/{id}', [ReporteController::class, 'destroy'])->middleware('admin');
         Route::post('/{id}/restore', [ReporteController::class, 'restore'])->middleware('admin');
+    });
+
+    // ============ ESTADÍSTICAS (KPIs + gráficos dashboard) ============
+    Route::prefix('estadisticas')->group(function () {
+        Route::get('/dashboard', [EstadisticaController::class, 'dashboard']);
+        Route::get('/matriculas-por-nivel', [EstadisticaController::class, 'matriculasPorNivel']);
+        Route::get('/logros-cneb', [EstadisticaController::class, 'logrosCneb']);
+        Route::get('/asistencia-mensual', [EstadisticaController::class, 'asistenciaMensual']);
+        Route::get('/ocupacion-secciones', [EstadisticaController::class, 'ocupacionSecciones']);
     });
 
     // ============ AUDITORÍA (solo ADMIN) ============

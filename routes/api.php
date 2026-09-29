@@ -39,7 +39,7 @@ Route::post('/auth/login', [AuthController::class, 'login'])->middleware('thrott
 Route::get('/auth/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::middleware(['auth:sanctum','throttle:120,1'])->group(function () {
+Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
     Route::get('/user', function (Illuminate\Http\Request $request) {
         return $request->user();
     });

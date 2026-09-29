@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\EnUsoException;
 use App\Exceptions\NotFoundException;
 use App\Models\Estudiante;
+use App\Models\Estado;
 use App\Models\Matricula;
 use App\Models\Padre;
 use App\Models\Periodo;
@@ -35,7 +36,13 @@ class MatriculaService
     {
         $this->assertPuedeGestionarMatricula();
         $this->validarLogicaEscuela($data);
-        return Matricula::create($data);
+
+        return DB::transaction(function () use ($data) {
+            $matricula = Matricula::create($data);
+            $this->sincronizarEstudiante((int) $matricula->estudiante_id, $matricula);
+
+            return $matricula;
+        });
     }
 
     public function update(int $id, array $data): Matricula
@@ -44,9 +51,14 @@ class MatriculaService
         $model = $this->getById($id);
         $fullData = array_merge($model->toArray(), array_filter($data, fn ($v) => ! is_null($v)));
         $this->validarLogicaEscuela($fullData, $id);
-        $model->update($data);
 
-        return $model;
+        return DB::transaction(function () use ($model, $data) {
+            $model->update($data);
+            $model->refresh();
+            $this->sincronizarEstudiante((int) $model->estudiante_id, $model);
+
+            return $model;
+        });
     }
 
     public function delete(int $id): void
@@ -115,6 +127,45 @@ class MatriculaService
         }
         $model->restore();
         return $model->refresh();
+    }
+
+    /**
+     * Sincroniza nivel_id / grado_id / estado_id del estudiante desde su
+     * matrícula del periodo activo (fuente de verdad: matrículas).
+     *
+     * - Sin periodo activo: usa la matrícula $fallback (la recién guardada).
+     * - Sin matrícula o sección sin grado: no hace nada (stop condition).
+     */
+    public function sincronizarEstudiante(int $estudianteId, ?Matricula $fallback = null): bool
+    {
+        $periodoActivo = Periodo::where('activo', true)->first();
+
+        $matricula = null;
+        if ($periodoActivo) {
+            $matricula = Matricula::with('seccion.grado')
+                ->where('estudiante_id', $estudianteId)
+                ->where('periodo_id', $periodoActivo->id)
+                ->latest('id')
+                ->first();
+        }
+        if (! $matricula && $fallback && (int) $fallback->estudiante_id === $estudianteId) {
+            $matricula = $fallback->loadMissing('seccion.grado');
+        }
+        if (! $matricula || ! $matricula->seccion || ! $matricula->seccion->grado_id) {
+            return false;
+        }
+
+        $estadoMatriculado = Estado::where('nombre', 'Matriculado')
+            ->where('tipo_aplica', 'estudiante')
+            ->first();
+
+        Estudiante::where('id', $estudianteId)->update([
+            'nivel_id' => $matricula->seccion->grado->nivel_id,
+            'grado_id' => $matricula->seccion->grado_id,
+            'estado_id' => $estadoMatriculado?->id,
+        ]);
+
+        return true;
     }
 
     /**

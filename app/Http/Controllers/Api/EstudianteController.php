@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\EstudianteService;
+use App\Services\EvaluacionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -46,6 +47,28 @@ class EstudianteController extends Controller
     public function show(int $id): JsonResponse
     {
         return response()->json($this->service->getById($id));
+    }
+
+    public function informeProgreso(Request $request, int $id, EvaluacionService $evaluacion): JsonResponse
+    {
+        $data = $request->validate([
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+        ]);
+
+        return response()->json($evaluacion->generarDatosInformeProgreso($id, $data['periodo_id'] ?? null));
+    }
+
+    public function informeProgresoPdf(Request $request, int $id, EvaluacionService $evaluacion)
+    {
+        $data = $request->validate([
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+        ]);
+
+        $informe = $evaluacion->generarDatosInformeProgreso($id, $data['periodo_id'] ?? null);
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.boleta', ['informe' => $informe])
+            ->setPaper('a4')
+            ->download("informe-progreso-{$id}.pdf");
     }
 
     public function update(Request $request, int $id): JsonResponse

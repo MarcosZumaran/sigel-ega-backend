@@ -4,18 +4,60 @@ namespace App\Services;
 
 use App\Exceptions\EnUsoException;
 use App\Exceptions\NotFoundException;
+use App\Models\Bimestre;
 use App\Models\Calificacion;
 use App\Models\Docente;
 use App\Models\Matricula;
 use App\Models\Personal;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CalificacionService
 {
-    public function getAll(): Collection
+    public function getAll(array $filters = []): Collection
     {
-        return Calificacion::with(['matricula', 'area', 'tipoEvaluacion'])->get();
+        $query = Calificacion::with(['matricula', 'area', 'tipoEvaluacion']);
+
+        if (! empty($filters['area_id'])) {
+            $query->where('area_id', (int) $filters['area_id']);
+        }
+
+        if (! empty($filters['tipo_evaluacion_id'])) {
+            $query->where('tipo_evaluacion_id', (int) $filters['tipo_evaluacion_id']);
+        }
+
+        if (! empty($filters['bimestre_id'])) {
+            $query->where('bimestre_id', (int) $filters['bimestre_id']);
+        }
+
+        $matriculaFilters = array_filter([
+            'periodo_id' => $filters['periodo_id'] ?? null,
+            'seccion_id' => $filters['seccion_id'] ?? null,
+        ]);
+
+        $nivelId = $filters['nivel_id'] ?? null;
+        $gradoId = $filters['grado_id'] ?? null;
+
+        if ($matriculaFilters || $nivelId || $gradoId) {
+            $query->whereHas('matricula', function ($q) use ($matriculaFilters, $nivelId, $gradoId) {
+                foreach ($matriculaFilters as $col => $val) {
+                    $q->where($col, (int) $val);
+                }
+                if ($nivelId || $gradoId) {
+                    $q->whereHas('seccion', function ($sq) use ($nivelId, $gradoId) {
+                        if ($gradoId) {
+                            $sq->where('grado_id', (int) $gradoId);
+                        }
+                        if ($nivelId) {
+                            $sq->whereHas('grado', fn ($gq) => $gq->where('nivel_id', (int) $nivelId));
+                        }
+                    });
+                }
+            });
+        }
+
+        return $query->get();
     }
 
     public function getById(int $id): Calificacion
@@ -32,6 +74,7 @@ class CalificacionService
     public function create(array $data): Calificacion
     {
         $this->validar($data);
+        $this->assertBimestreAbierto(isset($data['bimestre_id']) ? (int) $data['bimestre_id'] : null);
         $this->assertPuedeGestionarCalificacion($data);
         return Calificacion::create($data);
     }
@@ -41,6 +84,7 @@ class CalificacionService
         $model = $this->getById($id);
         $fullData = array_merge($model->toArray(), array_filter($data, fn ($v) => ! is_null($v)));
         $this->validar($fullData);
+        $this->assertBimestreAbierto(isset($fullData['bimestre_id']) ? (int) $fullData['bimestre_id'] : ($model->bimestre_id ? (int) $model->bimestre_id : null));
         $this->assertPuedeGestionarCalificacion($fullData, $model);
         $model->update($data);
 
@@ -50,8 +94,18 @@ class CalificacionService
     public function delete(int $id): void
     {
         $model = $this->getById($id);
+        $this->assertBimestreAbierto($model->bimestre_id ? (int) $model->bimestre_id : null);
         $this->assertPuedeGestionarCalificacion($model->toArray(), $model);
         $model->delete();
+    }
+
+    private function assertBimestreAbierto(?int $bimestreId): void
+    {
+        if (! $bimestreId) return;
+        $bim = Bimestre::find($bimestreId);
+        if ($bim && ! (bool) $bim->activo) {
+            throw new HttpException(403, 'El bimestre está cerrado. No se pueden modificar calificaciones.');
+        }
     }
 
     private function assertPuedeGestionarCalificacion(array $data, ?Calificacion $existing = null): void

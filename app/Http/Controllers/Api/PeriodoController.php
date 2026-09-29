@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PeriodoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class PeriodoController extends Controller
 {
@@ -84,5 +85,35 @@ class PeriodoController extends Controller
         $this->service->delete($id);
 
         return response()->json(['message' => 'Periodo eliminado correctamente']);
+    }
+
+    public function generarBimestres(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'anio' => 'nullable|integer|min:2000|max:2100',
+            'sobrescribir' => 'nullable|boolean',
+        ]);
+
+        $params = ['periodo_id' => (string) $id];
+        if (! empty($data['anio'])) {
+            $params['anio'] = (string) $data['anio'];
+        }
+        if (! empty($data['sobrescribir'])) {
+            $params['--force'] = true;
+        }
+
+        $exit = Artisan::call('sigel:generar-bimestres', $params);
+        $salida = Artisan::output();
+
+        if ($exit !== 0) {
+            return response()->json(['message' => trim($salida) ?: 'No se pudieron generar los bimestres.'], 422);
+        }
+
+        $bimestres = \App\Models\Bimestre::where('periodo_id', $id)->orderBy('numero')->get();
+
+        return response()->json([
+            'message' => trim($salida),
+            'bimestres' => $bimestres,
+        ], 201);
     }
 }

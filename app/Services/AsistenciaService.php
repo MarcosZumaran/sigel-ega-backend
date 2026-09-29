@@ -8,13 +8,39 @@ use App\Models\Asistencia;
 use App\Models\Matricula;
 use App\Models\Personal;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AsistenciaService
 {
-    public function getAll(): Collection
+    public function getAll(array $filters = []): Collection
     {
-        return Asistencia::with(['matricula'])->get();
+        $q = Asistencia::with(['matricula.estudiante']);
+
+        if (! empty($filters['matricula_id'])) {
+            $q->where('matricula_id', $filters['matricula_id']);
+        }
+        if (! empty($filters['estado'])) {
+            $q->where('estado', $filters['estado']);
+        }
+        if (! empty($filters['desde'])) {
+            $q->where('fecha', '>=', $filters['desde']);
+        }
+        if (! empty($filters['hasta'])) {
+            $q->where('fecha', '<=', $filters['hasta']);
+        }
+        if (! empty($filters['seccion_id']) || ! empty($filters['periodo_id'])) {
+            $q->whereHas('matricula', function ($mq) use ($filters) {
+                if (! empty($filters['seccion_id'])) {
+                    $mq->where('seccion_id', $filters['seccion_id']);
+                }
+                if (! empty($filters['periodo_id'])) {
+                    $mq->where('periodo_id', $filters['periodo_id']);
+                }
+            });
+        }
+
+        return $q->orderBy('fecha')->orderBy('matricula_id')->get();
     }
 
     public function getById(int $id): Asistencia
@@ -94,5 +120,44 @@ class AsistenciaService
         }
         $model->restore();
         return $model->refresh();
+    }
+
+    public function batchUpsert(array $items): array
+    {
+        return DB::transaction(function () use ($items) {
+            $creados = 0;
+            $actualizados = 0;
+            $errores = [];
+
+            foreach ($items as $i => $item) {
+                try {
+                    if (($item['estado'] ?? null) !== 'justificado') {
+                        $item['motivo_justificacion'] = null;
+                    }
+                    $existing = Asistencia::where('matricula_id', $item['matricula_id'])
+                        ->where('fecha', $item['fecha'])
+                        ->first();
+                    if ($existing) {
+                        $this->update($existing->id, $item);
+                        $actualizados++;
+                    } else {
+                        $this->create($item);
+                        $creados++;
+                    }
+                } catch (ValidationException $e) {
+                    foreach ($e->errors() as $field => $messages) {
+                        foreach ((array) $messages as $msg) {
+                            $errores[] = "Ítem {$i} ({$field}): {$msg}";
+                        }
+                    }
+                }
+            }
+
+            if (! empty($errores)) {
+                throw ValidationException::withMessages(['items' => $errores]);
+            }
+
+            return ['creados' => $creados, 'actualizados' => $actualizados, 'errores' => []];
+        });
     }
 }

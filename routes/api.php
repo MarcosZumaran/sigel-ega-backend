@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\AreaController;
 use App\Http\Controllers\Api\AsistenciaController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BimestreController;
+use App\Http\Controllers\Api\ConsolidadoController;
 use App\Http\Controllers\Api\CalificacionController;
 use App\Http\Controllers\Api\ConfiguracionController;
 use App\Http\Controllers\Api\DocenteController;
@@ -37,7 +39,7 @@ Route::post('/auth/login', [AuthController::class, 'login'])->middleware('thrott
 Route::get('/auth/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
 Route::post('/auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
+Route::middleware(['auth:sanctum','throttle:120,1'])->group(function () {
     Route::get('/user', function (Illuminate\Http\Request $request) {
         return $request->user();
     });
@@ -176,6 +178,7 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
         Route::post('/{id}/restore', [PeriodoController::class, 'restore'])->middleware('admin');
         Route::post('/{id}/activar', [PeriodoController::class, 'activar'])->middleware('admin');
         Route::post('/{id}/promocion', [PeriodoController::class, 'promocion'])->middleware('admin');
+        Route::post('/{id}/bimestres/generar', [PeriodoController::class, 'generarBimestres'])->middleware('admin');
     });
 
     Route::prefix('configuraciones')->whereNumber('id')->group(function () {
@@ -223,6 +226,8 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
         Route::put('/{id}', [EstudianteController::class, 'update'])->middleware('admin');
         Route::patch('/{id}', [EstudianteController::class, 'update'])->middleware('admin');
         Route::delete('/{id}', [EstudianteController::class, 'destroy'])->middleware('admin');
+        Route::get('/{id}/informe-progreso', [EstudianteController::class, 'informeProgreso'])->whereNumber('id');
+        Route::get('/{id}/informe-progreso.pdf', [EstudianteController::class, 'informeProgresoPdf'])->whereNumber('id');
         Route::post('/{id}/restore', [EstudianteController::class, 'restore'])->middleware('admin');
     });
 
@@ -247,6 +252,17 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
         Route::post('/{id}/restore', [MatriculaController::class, 'restore'])->middleware('admin');
     });
 
+    Route::prefix('bimestres')->whereNumber('id')->group(function () {
+        Route::get('/', [BimestreController::class, 'index']);
+        Route::get('/activo', [BimestreController::class, 'activo']);
+        Route::put('/{id}', [BimestreController::class, 'update'])->middleware('admin');
+        Route::patch('/{id}', [BimestreController::class, 'update'])->middleware('admin');
+        Route::post('/{id}/activar', [BimestreController::class, 'activar'])->middleware('admin');
+    });
+
+    Route::get('/consolidado', [ConsolidadoController::class, 'index']);
+    Route::post('/consolidado/batch', [ConsolidadoController::class, 'batch']);
+
     Route::prefix('calificaciones')->whereNumber('id')->group(function () {
         Route::get('/', [CalificacionController::class, 'index']);
         Route::post('/', [CalificacionController::class, 'store']);
@@ -260,6 +276,7 @@ Route::middleware(['auth:sanctum','throttle:60,1'])->group(function () {
     Route::prefix('asistencias')->whereNumber('id')->group(function () {
         Route::get('/', [AsistenciaController::class, 'index']);
         Route::post('/', [AsistenciaController::class, 'store']);
+        Route::post('/batch', [AsistenciaController::class, 'batch']);
         Route::get('/{id}', [AsistenciaController::class, 'show']);
         Route::put('/{id}', [AsistenciaController::class, 'update']);
         Route::patch('/{id}', [AsistenciaController::class, 'update']);

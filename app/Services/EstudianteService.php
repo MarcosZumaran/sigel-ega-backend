@@ -27,6 +27,18 @@ class EstudianteService
             throw new NotFoundException('Estudiante', $id);
         }
 
+        $periodoActivo = \App\Models\Periodo::where('activo', true)->first();
+        if ($periodoActivo) {
+            $model->setRelation(
+                'matricula_activa',
+                \App\Models\Matricula::with('seccion.grado')
+                    ->where('estudiante_id', $id)
+                    ->where('periodo_id', $periodoActivo->id)
+                    ->latest('id')
+                    ->first()
+            );
+        }
+
         return $model;
     }
 

@@ -16,9 +16,11 @@ class Area extends Model
     protected $table = 'areas';
 
     protected $fillable = [
-        'area_padre_id', 
-        'nombre', 
-        'codigo_siagie'
+        'area_padre_id',
+        'nombre',
+        'codigo_siagie',
+        'tipo',
+        'nivel_id',
     ];
 
     protected $with = ['areaPadre'];
@@ -36,6 +38,11 @@ class Area extends Model
         return $this->belongsTo(\App\Models\Area::class, 'area_padre_id', 'id');
     }
 
+    public function nivel(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Nivel::class, 'nivel_id', 'id');
+    }
+
     public function areasHijas(): HasMany
     {
         return $this->hasMany(\App\Models\Area::class, 'area_padre_id', 'id');
@@ -44,5 +51,15 @@ class Area extends Model
     public function calificaciones(): HasMany
     {
         return $this->hasMany(\App\Models\Calificacion::class, 'area_id', 'id');
+    }
+
+    public function scopeAreas($query)
+    {
+        return $query->where('tipo', 'area');
+    }
+
+    public function scopeCompetencias($query)
+    {
+        return $query->where('tipo', 'competencia');
     }
 }

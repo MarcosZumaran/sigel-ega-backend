@@ -18,6 +18,7 @@ class Calificacion extends Model
         'matricula_id', 
         'area_id', 
         'tipo_evaluacion_id', 
+        'bimestre_id',
         'nota', 
         'nivel_logro',
         'escala',
@@ -25,7 +26,7 @@ class Calificacion extends Model
         'motivo_nota_c'
     ];
 
-    protected $with = ['matricula', 'area', 'tipoEvaluacion'];
+    protected $with = ['matricula', 'area', 'tipoEvaluacion', 'bimestre'];
 
     protected function casts(): array
     {
@@ -52,5 +53,10 @@ class Calificacion extends Model
     public function tipoEvaluacion(): BelongsTo
     {
         return $this->belongsTo(\App\Models\TipoEvaluacion::class, 'tipo_evaluacion_id', 'id');
+    }
+
+    public function bimestre(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Bimestre::class, 'bimestre_id', 'id');
     }
 }

@@ -13,9 +13,18 @@ class AsistenciaController extends Controller
     {
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->service->getAll());
+        $filters = $request->validate([
+            'matricula_id' => 'nullable|integer|exists:matriculas,id',
+            'seccion_id' => 'nullable|integer|exists:secciones,id',
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+            'desde' => 'nullable|date',
+            'hasta' => 'nullable|date|after_or_equal:desde',
+            'estado' => 'nullable|in:presente,ausente,tardia,justificado',
+        ]);
+
+        return response()->json($this->service->getAll($filters));
     }
 
     public function store(Request $request): JsonResponse
@@ -56,6 +65,19 @@ class AsistenciaController extends Controller
     public function restore(int $id): JsonResponse
     {
         return response()->json($this->service->restore($id));
+    }
+
+    public function batch(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.matricula_id' => 'required|integer|exists:matriculas,id',
+            'items.*.fecha' => 'required|date',
+            'items.*.estado' => 'required|in:presente,ausente,tardia,justificado',
+            'items.*.motivo_justificacion' => 'nullable|string|max:500',
+        ]);
+
+        return response()->json($this->service->batchUpsert($data['items']));
     }
 
     public function destroy(int $id): JsonResponse

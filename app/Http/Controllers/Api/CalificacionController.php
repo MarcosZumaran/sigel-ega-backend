@@ -13,9 +13,19 @@ class CalificacionController extends Controller
     {
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json($this->service->getAll());
+        $filters = $request->validate([
+            'nivel_id' => 'nullable|integer|exists:niveles,id',
+            'grado_id' => 'nullable|integer|exists:grados,id',
+            'seccion_id' => 'nullable|integer|exists:secciones,id',
+            'area_id' => 'nullable|integer|exists:areas,id',
+            'tipo_evaluacion_id' => 'nullable|integer|exists:tipos_evaluacion,id',
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+            'bimestre_id' => 'nullable|integer|exists:bimestres,id',
+        ]);
+
+        return response()->json($this->service->getAll($filters));
     }
 
     public function store(Request $request): JsonResponse
@@ -29,6 +39,7 @@ class CalificacionController extends Controller
             'escala' => 'nullable|in:literal,vigesimal',
             'es_nota_c' => 'nullable|boolean',
             'motivo_nota_c' => 'nullable|string|max:255',
+            'bimestre_id' => 'nullable|integer|exists:bimestres,id',
         ]);
 
         $model = $this->service->create($data);
@@ -52,6 +63,7 @@ class CalificacionController extends Controller
             'escala' => 'nullable|in:literal,vigesimal',
             'es_nota_c' => 'nullable|boolean',
             'motivo_nota_c' => 'nullable|string|max:255',
+            'bimestre_id' => 'nullable|integer|exists:bimestres,id',
         ]);
 
         $model = $this->service->update($id, $data);

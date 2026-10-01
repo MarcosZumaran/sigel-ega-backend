@@ -325,6 +325,11 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
     });
 
     // ============ REPORTES DUAL (on-demand + cache nocturno 02:00) ============
+    Route::prefix('reportes')->group(function () {
+        Route::get('/acta-evaluacion', [ReporteController::class, 'actaEvaluacion']);
+        Route::get('/nomina-matricula', [ReporteController::class, 'nominaMatricula']);
+        Route::get('/orden-merito', [ReporteController::class, 'ordenMerito']);
+    });
     Route::prefix('reportes')->whereNumber('id')->group(function () {
         Route::get('/', [ReporteController::class, 'index']); // historial filtrable (default último año)
         Route::post('/', [ReporteController::class, 'store']); // generar on-demand

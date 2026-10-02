@@ -16,7 +16,9 @@ class UsuarioSeeder extends Seeder
         DB::table('users')->insertOrIgnore([
             'name' => 'Administrador SIGEL-EGA',
             'email' => 'admin@ega.edu.pe',
-            'password' => Hash::make('admin123'),
+            // NOTA: DB::table()->insert() no pasa por Eloquent, así que el cast
+            // 'hashed' NO aplica aquí: el Hash::make es obligatorio (hash único).
+            'password' => Hash::make(env('ADMIN_INITIAL_PASSWORD', 'CambiarEstaClave123!')),
             'rol_id' => $rolAdmin,
             'estado_id' => $estadoActivo,
         ]);

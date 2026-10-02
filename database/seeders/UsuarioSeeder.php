@@ -10,6 +10,14 @@ class UsuarioSeeder extends Seeder
 {
     public function run(): void
     {
+        // SEGURIDAD: bloquear ejecución en producción (el seeder usa clave de desarrollo)
+        if (app()->environment('production')) {
+            throw new \RuntimeException(
+                'El seeder con clave de desarrollo no puede ejecutarse en producción. '.
+                'Usa ADMIN_INITIAL_PASSWORD en su lugar.'
+            );
+        }
+
         $rolAdmin = DB::table('roles')->where('nombre', 'ADMIN')->value('id');
         $estadoActivo = DB::table('estados')->where('nombre', 'Activo')->where('tipo_aplica', 'usuario')->value('id');
 

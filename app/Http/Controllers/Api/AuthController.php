@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -27,8 +26,7 @@ class AuthController extends Controller
             ->where('tipo_aplica', 'usuario')
             ->value('id');
 
-        $data['password'] = Hash::make($data['password']);
-
+        // NOTA: no hashear aquí; el cast 'hashed' del modelo User lo hace una sola vez.
         $user = \App\Models\User::query()->create($data);
 
         $token = $user->createToken('sigel-ega')->plainTextToken;

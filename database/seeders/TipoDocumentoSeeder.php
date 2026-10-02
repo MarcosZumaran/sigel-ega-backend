@@ -18,5 +18,29 @@ class TipoDocumentoSeeder extends Seeder
             ['nombre' => 'Ficha de observación', 'descripcion' => 'Ficha de observación de estudiante o docente'],
             ['nombre' => 'Informe', 'descripcion' => 'Informe técnico o pedagógico'],
         ]);
+
+        // RF-19: formato de correlativo por tipo (un registro por tipo + año)
+        $formatos = [
+            'Acta' => 'ACTA N° {numero:03d}-{anio}-IE-EGA',
+            'Oficio' => 'OFICIO N° {numero:03d}-{anio}-IE-EGA',
+            'Resolución' => 'RESOLUCIÓN DIRECTORAL N° {numero:03d}-{anio}-IE-EGA',
+            'Memorando' => 'MEMORANDO N° {numero:03d}-{anio}-IE-EGA',
+            'Constancia' => 'CONSTANCIA N° {numero:03d}-{anio}-IE-EGA',
+            'Ficha de observación' => 'FICHA N° {numero:03d}-{anio}-IE-EGA',
+            'Informe' => 'INFORME N° {numero:03d}-{anio}-IE-EGA',
+        ];
+
+        foreach ($formatos as $nombre => $formato) {
+            $tipo = \App\Models\TipoDocumento::where('nombre', $nombre)->first();
+            if ($tipo) {
+                \App\Models\Correlativo::updateOrCreate(
+                    [
+                        'tipo_documento_id' => $tipo->id,
+                        'anio' => (int) date('Y'),
+                    ],
+                    ['formato' => $formato]
+                );
+            }
+        }
     }
 }

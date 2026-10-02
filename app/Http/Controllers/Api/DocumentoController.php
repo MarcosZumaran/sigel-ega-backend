@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\CorrelativoService;
 use App\Services\DocumentoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DocumentoController extends Controller
 {
-    public function __construct(private readonly DocumentoService $service)
-    {
+    public function __construct(
+        private readonly DocumentoService $service,
+        private readonly CorrelativoService $correlativos,
+    ) {
     }
 
     public function index(): JsonResponse
@@ -30,9 +33,32 @@ class DocumentoController extends Controller
             'usuario_id' => 'nullable|integer|exists:users,id',
         ]);
 
+        // RF-19: si no envían número, generarlo automáticamente del correlativo
+        if (empty($data['numero'])) {
+            $data['numero'] = $this->correlativos->siguiente(
+                (int) $data['tipo_documento_id']
+            );
+        }
+
         $model = $this->service->create($data);
 
         return response()->json($model, 201);
+    }
+
+    /**
+     * Previsualiza el próximo número correlativo sin consumirlo.
+     */
+    public function proximoNumero(Request $request): JsonResponse
+    {
+        $request->validate([
+            'tipo_documento_id' => 'required|integer|exists:tipos_documento,id',
+        ]);
+
+        return response()->json([
+            'proximo_numero' => $this->correlativos->proximo(
+                (int) $request->tipo_documento_id
+            ),
+        ]);
     }
 
     public function show(int $id): JsonResponse

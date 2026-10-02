@@ -298,6 +298,7 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
 
     Route::prefix('documentos')->whereNumber('id')->group(function () {
         Route::get('/', [DocumentoController::class, 'index']);
+        Route::get('/proximo-numero', [DocumentoController::class, 'proximoNumero']);
         Route::get('/{id}', [DocumentoController::class, 'show']);
         Route::post('/', [DocumentoController::class, 'store'])->middleware('admin');
         Route::put('/{id}', [DocumentoController::class, 'update'])->middleware('admin');

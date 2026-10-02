@@ -13,7 +13,10 @@ trait Auditable
         static::created(fn ($model) => self::auditLog('create', $model));
         static::updated(fn ($model) => self::auditLog('update', $model));
         static::deleted(fn ($model) => self::auditLog('delete', $model));
-        static::restored(fn ($model) => self::auditLog('restore', $model));
+        // NOTA: no usar static::restored() — ese helper solo existe en
+        // SoftDeletes; en modelos sin SoftDeletes cae en __callStatic y rompe
+        // el boot. registerModelEvent funciona en todos los casos.
+        static::registerModelEvent('restored', fn ($model) => self::auditLog('restore', $model));
     }
 
     protected static function auditLog(string $accion, $model): void

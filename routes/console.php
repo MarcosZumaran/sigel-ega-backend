@@ -13,3 +13,17 @@ Schedule::command('sigel:check-norma-tecnica ' . (now()->year + 1) . ' --guardar
     ->onOneServer()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/norma-tecnica.log'));
+
+// Backup automático diario a las 23:00
+Schedule::command('sigel:backup')
+    ->dailyAt('23:00')
+    ->onOneServer()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/backup.log'));
+
+// Limpieza semanal de backups antiguos
+Schedule::command('backup:clean')
+    ->weeklyOn(0, '02:00')
+    ->onOneServer()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/backup.log'));

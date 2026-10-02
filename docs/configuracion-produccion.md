@@ -40,8 +40,35 @@ Guardar la clave impresa en un lugar seguro y cambiarla en el primer login.
 php artisan tinker --execute="App\Models\User::where('email','admin@ega.edu.pe')->first()->tokens()->delete();"
 ```
 
-## Backup (pendiente — Fase 1)
+## Respaldos (RF-30, RF-31)
 
-Aún no existe estrategia de respaldo automatizado. Antes del despliegue
-definitivo, definir: `mysqldump` programado de `sigel_ega` + copia de
-`storage/app/*`, con retención y prueba de restauración.
+### Backup manual
+```bash
+php artisan sigel:backup
+# Con destino externo (USB):
+php artisan sigel:backup --destino=/media/usb-sigel
+```
+
+### Restauración
+```bash
+php artisan sigel:restore /ruta/al/backup.zip
+# Sin confirmación (PELIGROSO):
+php artisan sigel:restore /ruta/al/backup.zip --force
+```
+
+### Backup automático
+- Diario a las 23:00 (configurado en `routes/console.php`)
+- Limpieza semanal (domingos 02:00)
+- Retención: 30 días todo, 7 días diarios, 4 semanas, 6 meses, 1 año
+- Máximo: 5 GB de backups acumulados
+- Requisito: Cron activo en producción. Agregar a crontab:
+```
+* * * * * cd /ruta/sigel-ega-backend && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Ubicación de backups
+- Principal: `storage/app/private/{APP_NAME}-{APP_ENV}/`
+- Externo: según `--destino`
+
+### Prueba de restauración recomendada
+Cada mes, verificar que un backup se puede restaurar en entorno de prueba.

@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\PersonalController;
 use App\Http\Controllers\Api\AsistenciaPersonalController;
 use App\Http\Controllers\Api\EstadisticaController;
 use App\Http\Controllers\Api\SiagieController;
+use App\Http\Controllers\Api\SiagieLogController;
 use App\Http\Controllers\Api\TipoMatriculaController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -320,6 +321,9 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
 
     // ============ SIAGIE IMPORT/EXPORT (plantilla nombre inmutable + nota C con motivo + AD/A/B/C) ============
     Route::prefix('siagie')->group(function () {
+        // Logs SIAGIE RF-29 (solo lectura; antes de export para evitar colisión)
+        Route::get('/logs', [SiagieLogController::class, 'index']);
+        Route::get('/logs/{id}', [SiagieLogController::class, 'show'])->whereNumber('id');
         Route::post('/import', [SiagieController::class, 'import'])->middleware('admin');
         Route::get('/export/{seccion}', [SiagieController::class, 'export'])->whereNumber('seccion');
         Route::get('/export/{seccion}/{periodo}', [SiagieController::class, 'export'])->whereNumber('seccion')->whereNumber('periodo');

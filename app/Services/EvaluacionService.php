@@ -138,7 +138,9 @@ class EvaluacionService
                             'bimestre_id' => $bimestreId,
                             'es_final' => false,
                         ],
-                        ['area_id' => $competencia->area_padre_id, 'nivel_logro' => $nivel]
+                        // NOTA: la columna de niveles_logro_consolidados se llama 'nivel'
+                        // (no 'nivel_logro'; ese nombre vive en calificaciones).
+                        ['area_id' => $competencia->area_padre_id, 'nivel' => $nivel]
                     );
                     $niveles++;
                 }

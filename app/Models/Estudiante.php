@@ -68,4 +68,12 @@ class Estudiante extends Model
     {
         return $this->belongsTo(Apoderado::class, 'apoderado_id', 'id');
     }
+
+    /**
+     * Nombre completo "apellidos, nombres" (usado por export SIAGIE).
+     */
+    public function getNombreCompletoAttribute(): string
+    {
+        return trim(trim($this->apellidos ?? '').', '.trim($this->nombres ?? ''), ', ');
+    }
 }

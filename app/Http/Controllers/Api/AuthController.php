@@ -17,9 +17,15 @@ class AuthController extends Controller
             'name' => 'required|string|max:150',
             'email' => 'required|string|email|max:150|unique:users,email',
             'password' => ['required', Password::min(8)],
-            'rol_id' => 'nullable|integer|exists:roles,id',
-            'estado_id' => 'nullable|integer|exists:estados,id',
         ]);
+
+        // SEGURIDAD: nunca aceptar rol_id ni estado_id del request (auto-escalado).
+        // Se fuerza el rol menos privilegiado (DOCENTE) y el estado Activo.
+        $data['rol_id'] = \App\Models\Rol::where('nombre', 'DOCENTE')->value('id')
+            ?? \App\Models\Rol::orderBy('id', 'desc')->value('id');
+        $data['estado_id'] = \App\Models\Estado::where('nombre', 'Activo')
+            ->where('tipo_aplica', 'usuario')
+            ->value('id');
 
         $data['password'] = Hash::make($data['password']);
 

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Seccion;
 use App\Models\Periodo;
+use App\Services\SiagieLogService;
 
 class SiagieController extends Controller
 {
@@ -15,8 +16,10 @@ class SiagieController extends Controller
      * Importa plantilla SIAGIE (Excel). El nombre del archivo NO debe modificarse (criterio acta 2.0).
      * Valida AD/A/B/C + 0-20 + nota C con motivo.
      */
-    public function import(Request $request): JsonResponse
+    public function import(Request $request, SiagieLogService $logs): JsonResponse
     {
+        $inicio = microtime(true);
+
         $request->validate([
             'archivo' => 'required|file|mimes:xlsx,xls,csv,txt|max:5120',
             'periodo_id' => 'required|exists:periodos,id',
@@ -96,6 +99,22 @@ class SiagieController extends Controller
             $errors[] = 'Excel sin filas de datos (verifique header: dni,area_id,tipo_evaluacion_id,nivel_logro,motivo_c)';
         }
 
+        // RF-29: registrar el evento de importación antes de responder
+        $duracion = (int) ((microtime(true) - $inicio) * 1000);
+
+        $logs->registrar([
+            'operacion' => 'import',
+            'archivo' => $originalName,
+            'formato' => $ext,
+            'periodo_id' => (int) $request->periodo_id,
+            'seccion_id' => (int) $request->seccion_id,
+            'filas_procesadas' => count($rows),
+            'filas_exitosas' => $imported,
+            'filas_con_error' => count($errors),
+            'errores' => $errors ?: null,
+            'duracion_ms' => $duracion,
+        ]);
+
         return response()->json([
             'message' => $imported ? 'Importación completada' : 'Plantilla recibida (nombre preservado).',
             'archivo' => $originalName,
@@ -107,17 +126,42 @@ class SiagieController extends Controller
         ], 201);
     }
 
-    public function export(Request $request, int $seccion, ?int $periodo = null): \Symfony\Component\HttpFoundation\StreamedResponse|JsonResponse|\Illuminate\Http\Response
+    public function export(Request $request, int $seccion, ?int $periodo = null, SiagieLogService $logs = null): \Symfony\Component\HttpFoundation\StreamedResponse|JsonResponse|\Illuminate\Http\Response
     {
+        $inicio = microtime(true);
+
         $sec = Seccion::with('grado.nivel')->findOrFail($seccion);
         $per = $periodo ? Periodo::findOrFail($periodo) : Periodo::where('activo', true)->first();
         if (! $per) {
             return response()->json(['message' => 'Periodo no encontrado o no activo.'], 404);
         }
         $formato = $request->query('formato', 'csv');
+
+        // RF-29: helper para registrar el evento de exportación antes de cada descarga.
+        // No altera la lógica de export; solo deja rastro del evento.
+        $registrarLog = function () use ($logs, $inicio, $sec, $per, $formato) {
+            if (! $logs) {
+                return;
+            }
+            $total = \App\Models\Calificacion::whereHas('matricula', fn ($q) => $q->where('seccion_id', $sec->id)->where('periodo_id', $per->id))->count();
+
+            $logs->registrar([
+                'operacion' => 'export',
+                'archivo' => 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id,
+                'formato' => $formato,
+                'periodo_id' => $per->id,
+                'seccion_id' => $sec->id,
+                'filas_procesadas' => $total,
+                'filas_exitosas' => $total,
+                'filas_con_error' => 0,
+                'duracion_ms' => (int) ((microtime(true) - $inicio) * 1000),
+            ]);
+        };
+
         if ($formato === 'json') {
             $cals = \App\Models\Calificacion::with(['matricula.estudiante','area'])
                 ->whereHas('matricula', fn($q)=> $q->where('seccion_id',$seccion)->where('periodo_id',$per->id))->get();
+            $registrarLog();
             return response()->json(['seccion'=>$sec,'periodo'=>$per,'calificaciones'=>$cals]);
         }
         $cals = \App\Models\Calificacion::with(['matricula.estudiante','area','tipoEvaluacion'])
@@ -145,6 +189,7 @@ class SiagieController extends Controller
             $sh->getStyle('A2:J'.($row-1))->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN)->getColor()->setRGB('CBD5E1');
             $sh->freezePane('A3');
             $filename = 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id.'_'.date('Ymd').'.xlsx';
+            $registrarLog();
             return response()->streamDownload(function () use ($ss) { $w = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($ss); $w->save('php://output'); }, $filename, ['Content-Type'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
         }
         if ($formato === 'pdf') {
@@ -157,9 +202,11 @@ class SiagieController extends Controller
             $html .= '</table><p style=\"font-size:7px; color:#64748B; text-align:center; margin-top:10px\">SIGEL-EGA — Generado '.date('d/m/Y H:i').' — '.$ie.'</p></body></html>';
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setPaper('a4','landscape');
             $filename = 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id.'_'.date('Ymd').'.pdf';
+            $registrarLog();
             return $pdf->download($filename);
         }
         $filename = 'SIAGIE_'.$sec->grado->nivel->nombre.'_'.$sec->grado->nombre.'_Sec'.$sec->id.'_Per'.$per->id.'_'.date('Ymd').'.csv';
+        $registrarLog();
         return response()->streamDownload(function () use ($cals) {
             $out = fopen('php://output', 'w');
             fputcsv($out, ['dni','codigo_estudiante','apellidos_nombres','area_id','area','tipo_evaluacion_id','nivel_logro','nota','escala','motivo_c']);

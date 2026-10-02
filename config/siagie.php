@@ -99,13 +99,17 @@ return [
     |--------------------------------------------------------------------------
     */
     'export' => [
+        // Los paths se resuelven desde el modelo Calificacion:
+        // - 'calificacion.*' = autorreferencia (atributo propio)
+        // - 'area' / 'tipoEvaluacion' = relaciones directas (nombres exactos del modelo)
+        // - 'matricula.estudiante.*' = el estudiante llega vía su matrícula
         'columnas' => [
-            ['campo' => 'estudiante.dni', 'header' => 'DNI', 'ancho' => 10],
-            ['campo' => 'estudiante.codigo_estudiante', 'header' => 'Código', 'ancho' => 12],
-            ['campo' => 'estudiante.nombre_completo', 'header' => 'Apellidos y Nombres', 'ancho' => 40],
+            ['campo' => 'matricula.estudiante.dni', 'header' => 'DNI', 'ancho' => 10],
+            ['campo' => 'matricula.estudiante.codigo_estudiante', 'header' => 'Código', 'ancho' => 12],
+            ['campo' => 'matricula.estudiante.nombre_completo', 'header' => 'Apellidos y Nombres', 'ancho' => 40],
             ['campo' => 'area.nombre', 'header' => 'Área', 'ancho' => 25],
             ['campo' => 'area.codigo_siagie', 'header' => 'Código Área', 'ancho' => 15],
-            ['campo' => 'tipo_evaluacion.nombre', 'header' => 'Tipo', 'ancho' => 15],
+            ['campo' => 'tipoEvaluacion.nombre', 'header' => 'Tipo', 'ancho' => 15],
             ['campo' => 'calificacion.nivel_logro', 'header' => 'Nivel', 'ancho' => 8],
             ['campo' => 'calificacion.nota', 'header' => 'Nota', 'ancho' => 8],
             ['campo' => 'calificacion.escala', 'header' => 'Escala', 'ancho' => 10],

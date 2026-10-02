@@ -30,7 +30,7 @@ class SiagieController extends Controller
 
         $imported = 0; $errors = [];
         $rows = [];
-        // XLSX/XLS con PhpSpreadsheet (ext-gd ahora disponible vía --ignore-platform-reqs)
+        // XLSX/XLS con PhpSpreadsheet (solo lectura de celdas; no usa imágenes, no requiere ext-gd)
         if (in_array($ext, ['xlsx','xls'])) {
             try {
                 $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Estudiante;
 use App\Services\EstudianteService;
 use App\Services\EvaluacionService;
+use App\Services\FumService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,6 +30,16 @@ class EstudianteController extends Controller
             'apellidos' => 'required|string|max:150',
             'fecha_nacimiento' => 'nullable|date',
             'sexo' => 'nullable|in:M,F',
+            'lengua_materna' => 'nullable|string|max:50',
+            'autoidentificacion_etnica' => 'nullable|string|max:100',
+            'tiene_discapacidad' => 'nullable|boolean',
+            'tipo_discapacidad' => 'nullable|string|max:100',
+            'grado_discapacidad' => 'nullable|in:Leve,Moderada,Severa',
+            'tiene_certificado_discapacidad' => 'nullable|boolean',
+            'pais_nacimiento' => 'nullable|string|max:50',
+            'departamento_nacimiento' => 'nullable|string|max:100',
+            'provincia_nacimiento' => 'nullable|string|max:100',
+            'distrito_nacimiento' => 'nullable|string|max:100',
             'direccion' => 'nullable|string|max:200',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|string|email|max:100',
@@ -71,6 +83,43 @@ class EstudianteController extends Controller
             ->download("informe-progreso-{$id}.pdf");
     }
 
+    /**
+     * Retorna los datos JSON de la FUM (para previsualización en frontend).
+     */
+    public function fum(Request $request, int $id, FumService $fum): JsonResponse
+    {
+        $data = $request->validate([
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+        ]);
+
+        $estudiante = Estudiante::with(['nivel', 'grado', 'estado', 'apoderado'])
+            ->findOrFail($id);
+
+        return response()->json($fum->datos($estudiante, $data['periodo_id'] ?? null));
+    }
+
+    /**
+     * Genera el PDF oficial de la FUM.
+     */
+    public function fumPdf(Request $request, int $id, FumService $fum)
+    {
+        $data = $request->validate([
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+        ]);
+
+        $estudiante = Estudiante::with(['nivel', 'grado', 'estado', 'apoderado'])
+            ->findOrFail($id);
+
+        $datos = $fum->datos($estudiante, $data['periodo_id'] ?? null);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.fum', $datos)
+            ->setPaper('a4', 'portrait');
+
+        $nombre = 'FUM_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.pdf';
+
+        return $pdf->download($nombre);
+    }
+
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
@@ -80,6 +129,16 @@ class EstudianteController extends Controller
             'apellidos' => 'sometimes|string|max:150',
             'fecha_nacimiento' => 'nullable|date',
             'sexo' => 'nullable|in:M,F',
+            'lengua_materna' => 'nullable|string|max:50',
+            'autoidentificacion_etnica' => 'nullable|string|max:100',
+            'tiene_discapacidad' => 'nullable|boolean',
+            'tipo_discapacidad' => 'nullable|string|max:100',
+            'grado_discapacidad' => 'nullable|in:Leve,Moderada,Severa',
+            'tiene_certificado_discapacidad' => 'nullable|boolean',
+            'pais_nacimiento' => 'nullable|string|max:50',
+            'departamento_nacimiento' => 'nullable|string|max:100',
+            'provincia_nacimiento' => 'nullable|string|max:100',
+            'distrito_nacimiento' => 'nullable|string|max:100',
             'direccion' => 'nullable|string|max:200',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|string|email|max:100',

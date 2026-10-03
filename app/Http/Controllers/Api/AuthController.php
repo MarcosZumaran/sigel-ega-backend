@@ -29,6 +29,9 @@ class AuthController extends Controller
         // NOTA: no hashear aquí; el cast 'hashed' del modelo User lo hace una sola vez.
         $user = \App\Models\User::query()->create($data);
 
+        // Spatie: asignar rol DOCENTE (además del rol_id legacy ya forzado arriba).
+        $user->assignRole('DOCENTE');
+
         $token = $user->createToken('sigel-ega')->plainTextToken;
 
         return response()->json([

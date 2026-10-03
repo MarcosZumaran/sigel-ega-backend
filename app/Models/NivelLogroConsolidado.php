@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\Auditable;
 
 class NivelLogroConsolidado extends Model
 {
+    use Auditable;
+
     protected $table = 'niveles_logro_consolidados';
 
     protected $fillable = ['matricula_id', 'competencia_id', 'area_id', 'bimestre_id', 'nivel', 'es_final'];

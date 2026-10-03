@@ -3,37 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>Ficha Única de Matrícula</title>
-    <style>
-        @page { size: A4 portrait; margin: 12mm 10mm; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 8.5px; color: #1E293B; }
-        .header { text-align: center; border-bottom: 2px solid #1E3A8A; padding-bottom: 4px; margin-bottom: 6px; }
-        .header h1 { color: #1E3A8A; font-size: 13px; margin: 0; }
-        .header h2 { color: #334155; font-size: 10px; margin: 2px 0; }
-        .header p { font-size: 7.5px; color: #64748B; margin: 0; }
-        .seccion { margin-top: 6px; }
-        .seccion-titulo { background: #1E3A8A; color: #fff; padding: 3px 6px; font-weight: bold; font-size: 8px; }
-        table { width: 100%; border-collapse: collapse; }
-        td { padding: 3px 5px; border: 1px solid #CBD5E1; vertical-align: top; }
-        td.label { background: #F1F5F9; font-weight: bold; width: 22%; font-size: 7.5px; color: #475569; }
-        td.valor { background: #FFFFFF; }
-        .firma { text-align: center; margin-top: 20px; }
-        .firma-line { border-top: 1px solid #000; width: 200px; margin: 0 auto 2px; padding-top: 3px; font-size: 8px; }
-        .foto { width: 90px; height: 120px; border: 1px solid #CBD5E1; background: #F8FAFC; text-align: center; font-size: 7px; color: #94A3B8; padding-top: 50px; }
-    </style>
+    @include('reportes.partials.estilos', ['orientacion' => 'vertical'])
 </head>
 <body>
 
-<div class="header">
-    <h1>{{ $ie['nombre'] }}</h1>
-    <h2>FICHA ÚNICA DE MATRÍCULA</h2>
-    <p>
-        Código Modular: {{ $ie['codigo_modular'] ?: '___________' }} ·
-        Resolución: {{ $ie['resolucion_creacion'] ?: '___________' }} ·
-        UGEL: {{ $ie['ugel'] ?: '___________' }} ·
-        DRE: {{ $ie['dre'] ?: '___________' }}
-    </p>
-    <p>Año escolar: {{ $periodo?->anio ?? date('Y') }}</p>
-</div>
+@include('reportes.partials.membrete', [
+    'titulo' => 'FICHA ÚNICA DE MATRÍCULA',
+    'subtitulo' => 'Año escolar: ' . ($periodo?->anio ?? date('Y')),
+    'orientacion' => 'vertical',
+])
 
 <table>
     <tr>

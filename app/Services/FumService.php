@@ -137,6 +137,27 @@ class FumService
             ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);
         }
 
+        // Sección HERMANOS EN LA IE (solo si hay hermanos)
+        if (! empty($datos['hermanos']) && $datos['hermanos']->isNotEmpty()) {
+            $builder->addSeccionTitulo('HERMANOS EN LA INSTITUCIÓN EDUCATIVA');
+
+            $filasHermanos = [];
+            foreach ($datos['hermanos'] as $h) {
+                $filasHermanos[] = [
+                    $h['dni'] ?? '',
+                    $h['nombre_completo'] ?? '',
+                    $h['nivel'] ?? '',
+                    $h['grado'] ?? '',
+                ];
+            }
+
+            $builder->addTabla(
+                ['DNI', 'Apellidos y Nombres', 'Nivel', 'Grado'],
+                $filasHermanos,
+                ['anchos' => [1500, 4500, 2000, 2906], 'colorear_celdas' => false]
+            );
+        }
+
         // Firmas
         $builder->addFirmas([
             ['nombre' => 'Firma del Padre/Madre/Apoderado', 'detalle' => 'DNI: '.($padre?->dni ?? '')],

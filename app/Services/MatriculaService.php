@@ -83,7 +83,7 @@ class MatriculaService
     {
         $user = auth()->user();
         if (! $user) return;
-        if ((int) $user->rol_id === 1) return;
+        if ($user->hasRole('ADMIN')) return;
         throw new EnUsoException('Solo el administrador puede gestionar matrículas.');
     }
 

@@ -28,3 +28,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 storage/app/private/tmp_*.docx
+/fullclip
+/fullclip.pub
+*.pem
+*.key

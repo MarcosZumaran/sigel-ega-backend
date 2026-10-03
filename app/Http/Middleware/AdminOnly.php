@@ -11,7 +11,7 @@ class AdminOnly
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (! $user || ! $user->rol || $user->rol->nombre !== 'ADMIN') {
+        if (! $user || ! $user->hasRole('ADMIN')) {
             return response()->json(['message' => 'Solo el administrador puede realizar esta acción.'], 403);
         }
 

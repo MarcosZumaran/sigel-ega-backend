@@ -98,18 +98,16 @@ class ReporteController extends Controller
             ->download("acta-evaluacion-{$seccion->id}-{$periodo->id}.pdf");
     }
 
-    public function actaEvaluacionWord(Request $request, EvaluacionService $evaluacion, WordExportService $word)
+    public function actaEvaluacionWord(Request $request, ActaWordService $actaWord)
     {
-        $data = $request->validate([
+        $request->validate([
             'seccion_id' => 'required|integer|exists:secciones,id',
             'periodo_id' => 'required|integer|exists:periodos,id',
         ]);
-        $seccion = Seccion::with('grado.nivel')->findOrFail($data['seccion_id']);
-        $periodo = Periodo::findOrFail($data['periodo_id']);
-        [$areas, $filas] = $this->prepararDatosActa($seccion, $periodo, $evaluacion);
+        $seccion = Seccion::with('grado.nivel')->findOrFail($request->seccion_id);
+        $periodo = Periodo::findOrFail($request->periodo_id);
 
-        $rutaTemp = storage_path('app/private/tmp_'.uniqid().'.docx');
-        $word->desdeVista('reportes.acta-evaluacion', compact('seccion', 'periodo', 'areas', 'filas'), $rutaTemp);
+        $rutaTemp = $actaWord->generarDocx($seccion, $periodo);
 
         return response()->download($rutaTemp, "ACTA_{$seccion->id}_{$periodo->id}_".date('Ymd').'.docx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

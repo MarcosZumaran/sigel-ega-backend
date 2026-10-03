@@ -155,7 +155,7 @@ class WordBuilderService
 
         // Data rows
         foreach ($rows as $idx => $row) {
-            $table->addRow();
+            $table->addRow(0, ['cantSplit' => true]);
             $valores = is_array($row) ? array_values($row) : [$row];
 
             foreach ($valores as $i => $valor) {
@@ -220,7 +220,7 @@ class WordBuilderService
         ]);
 
         foreach ($filas as $i => $fila) {
-            $table->addRow();
+            $table->addRow(0, ['cantSplit' => true]);
 
             // Columna foto (vMerge restart en primera fila)
             if ($i === 0) {

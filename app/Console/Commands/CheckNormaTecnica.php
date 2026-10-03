@@ -6,7 +6,7 @@ use App\Models\NormaDetectada;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Smalot\PdfParser\Parser;
+use PrinsFrank\PdfParser\PdfParser;
 
 class CheckNormaTecnica extends Command
 {
@@ -176,7 +176,7 @@ class CheckNormaTecnica extends Command
     private function textoPdfParser(string $pdfPath): string
     {
         try {
-            return (new Parser())->parseFile($pdfPath)->getText();
+            return (new PdfParser())->parseFile($pdfPath)->getText();
         } catch (\Throwable) {
             return '';
         }

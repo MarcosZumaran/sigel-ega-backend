@@ -110,6 +110,7 @@ class FumService
             ['Nivel', $mat?->seccion?->grado?->nivel?->nombre ?? ''],
             ['Grado y Sección', ($mat?->seccion?->grado?->nombre ?? '').' "'.($mat?->seccion?->nombre ?? '').'"'],
             ['Tipo de matrícula', $mat?->tipoMatricula?->nombre ?? 'Regular'],
+            ['Tipo de vacante (RM 193-2020-MINEDU)', $mat?->tipo_vacante ?? 'Regular'],
             ['Fecha de matrícula', $mat?->fecha ?? ''],
             ['Estado', $mat?->estado?->nombre ?? ''],
         ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);

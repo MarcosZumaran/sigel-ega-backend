@@ -68,7 +68,9 @@
         </tr>
         <tr>
             <td class="label">Estado</td>
-            <td class="valor" colspan="3">{{ $matricula?->estado?->nombre ?? '' }}</td>
+            <td class="valor">{{ $matricula?->estado?->nombre ?? '' }}</td>
+            <td class="label">Tipo de vacante (RM 193-2020)</td>
+            <td class="valor">{{ $matricula?->tipo_vacante ?? 'Regular' }}</td>
         </tr>
     </table>
 </div>

@@ -34,7 +34,7 @@ class NominaWordService
 
         $matriculas = $this->matriculas($seccion, $periodo);
 
-        $headers = ['N°', 'DNI', 'Apellidos y Nombres', 'Fecha Nac.', 'Sexo', 'Dirección', 'Apoderado'];
+        $headers = ['N°', 'DNI', 'Apellidos y Nombres', 'Fecha Nac.', 'Sexo', 'Dirección', 'Apoderado', 'Tipo Vacante'];
 
         $rows = [];
         foreach ($matriculas as $idx => $m) {
@@ -48,12 +48,13 @@ class NominaWordService
                 $e->sexo ?? '—',
                 $e->direccion ?? '—',
                 $apo ? trim(($apo->apellidos ?? '').', '.($apo->nombres ?? '')) : '—',
+                $m->tipo_vacante ?? 'Regular',
             ];
         }
 
-        // 400+900+2500+900+500+2700+3006 = 10906 (ancho útil portrait)
+        // 400+900+2300+850+500+2400+2556+1000 = 10906 (ancho útil portrait)
         $builder->addTabla($headers, $rows, [
-            'anchos' => [400, 900, 2500, 900, 500, 2700, 3006],
+            'anchos' => [400, 900, 2300, 850, 500, 2400, 2556, 1000],
             'colorear_celdas' => false,
         ]);
 

@@ -15,11 +15,15 @@ class Matricula extends Model
 
     protected $table = 'matriculas';
 
+    /**
+     * Tipo de vacante según RM N° 193-2020-MINEDU: Regular, Ampliada, Virtual.
+     */
     protected $fillable = [
         'estudiante_id', 
         'seccion_id', 
         'periodo_id', 
-        'tipo_matricula_id', 
+        'tipo_matricula_id',
+        'tipo_vacante',
         'fecha', 
         'estado_id', 
         'observaciones'

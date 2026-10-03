@@ -62,20 +62,20 @@ class WordBuilderService
             'name' => self::FUENTE, 'size' => 13, 'bold' => true, 'color' => self::COLOR_PRIMARIO,
         ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
 
-        // Línea 2: SIEMPRE visible (con placeholders si vacío)
-        $linea2 = 'Código Modular: '.($ie['codigo_modular'] ?: '___________')
-            .' · Resolución: '.($ie['resolucion_creacion'] ?: '___________')
-            .' · UGEL: '.($ie['ugel'] ?: '___________')
-            .' · DRE: '.($ie['dre'] ?: '___________');
+        // Línea 2: SIEMPRE visible (compacta, 1 línea)
+        $linea2 = 'Código Modular: '.($ie['codigo_modular'] ?: '____')
+            .' · Resolución: '.($ie['resolucion_creacion'] ?: '____')
+            .' · UGEL: '.($ie['ugel'] ?: '____')
+            .' · DRE: '.($ie['dre'] ?: '____');
 
         $this->section->addText($linea2, [
-            'name' => self::FUENTE, 'size' => 8, 'color' => '334155',
+            'name' => self::FUENTE, 'size' => 7.5, 'color' => '334155',
         ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
 
-        // Línea 3: SIEMPRE visible
-        $linea3 = ($ie['direccion'] ?: '___________')
-            .' · Tel: '.($ie['telefono'] ?: '___________')
-            .' · '.($ie['correo'] ?: '___________');
+        // Línea 3: SIEMPRE visible (compacta, 1 línea)
+        $linea3 = 'Dirección: '.($ie['direccion'] ?: '____')
+            .' · Tel: '.($ie['telefono'] ?: '____')
+            .' · Correo: '.($ie['correo'] ?: '____');
 
         $this->section->addText($linea3, [
             'name' => self::FUENTE, 'size' => 7.5, 'color' => self::COLOR_MUTED,
@@ -84,7 +84,7 @@ class WordBuilderService
         // Título del documento
         $this->section->addText($titulo, [
             'name' => self::FUENTE, 'size' => 12, 'bold' => true, 'color' => self::COLOR_PRIMARIO,
-        ], ['alignment' => Jc::CENTER, 'spaceBefore' => 200]);
+        ], ['alignment' => Jc::CENTER, 'spaceBefore' => 80]);
 
         if ($subtitulo) {
             $this->section->addText($subtitulo, [
@@ -99,7 +99,7 @@ class WordBuilderService
             'alignment' => Jc::CENTER,
             'borderBottomSize' => 12,
             'borderBottomColor' => self::COLOR_PRIMARIO,
-            'spaceAfter' => 200,
+            'spaceAfter' => 100,
         ]);
 
         return $this;
@@ -115,8 +115,8 @@ class WordBuilderService
         ], [
             'shading' => ['fill' => self::COLOR_PRIMARIO],
             'alignment' => Jc::LEFT,
-            'spaceBefore' => 100,
-            'spaceAfter' => 100,
+            'spaceBefore' => 120,
+            'spaceAfter' => 60,
         ]);
 
         return $this;
@@ -340,6 +340,14 @@ class WordBuilderService
         ], ['alignment' => Jc::CENTER, 'spaceBefore' => 200]);
 
         return $this;
+    }
+
+    /**
+     * Ancho útil de la página en twips (para cálculo de anchos de tabla).
+     */
+    public function getAnchoUtil(): int
+    {
+        return $this->anchoUtil;
     }
 
     /**

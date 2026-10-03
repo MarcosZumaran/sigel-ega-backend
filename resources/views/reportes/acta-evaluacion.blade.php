@@ -1,5 +1,17 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><style>body{font-family:DejaVu Sans,sans-serif;font-size:10px;color:#1e293b}@page{size:A4 landscape;margin:14mm 12mm}.head{background:#1E3A8A;color:#fff;padding:8px 12px;border-radius:4px;text-align:center}.head h1{margin:0;font-size:15px}.head p{margin:2px 0 0;font-size:9px}.datos{margin:8px 0;border:1px solid #cbd5e1;border-radius:4px;padding:5px 10px;font-size:9px}.datos b{color:#1E3A8A}table{width:100%;border-collapse:collapse;margin-top:6px}th{background:#1E3A8A;color:#fff;padding:8px 6px;font-size:9px}td{padding:6px 4px;border:1px solid #e2e8f0;vertical-align:top}tr:nth-child(even) td{background:#F8FAFC}.niv{font-weight:bold;text-align:center}.AD{color:#1E3A8A}.A{color:#16a34a}.B{color:#b45309}.C{color:#dc2626}.firmas{margin-top:22px;width:100%}.firmas td{border:none;text-align:center;font-size:9px;padding-top:28px}.firmas .lin{border-top:1px solid #1e293b;margin:0 30px}.logo{float:left;width:64px;height:64px;border:2px solid #fff;border-radius:6px;text-align:center;font-size:14px;font-weight:bold;padding-top:8px;margin-right:10px}.resumen{margin:8px 0 0;font-size:10px;font-weight:bold;color:#1E3A8A}.pg:after{content:" · Página " counter(page) " de " counter(pages)}.pie{margin-top:10px;font-size:8px;color:#64748b;text-align:right}</style></head><body>
-<div class="head"><div class="logo">IE<br>EGA</div><h1>SIGEL-EGA — ACTA OFICIAL DE EVALUACIÓN</h1><p>Institución Educativa Pública EGA · Evaluación por competencias (RVM 094-2020 y 048-2024)</p></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Acta de Evaluación</title>
+    @include('reportes.partials.estilos', ['orientacion' => 'horizontal'])
+</head>
+<body>
+
+@include('reportes.partials.membrete', [
+    'titulo' => 'ACTA OFICIAL DE EVALUACIÓN',
+    'subtitulo' => ($seccion->grado->nivel->nombre ?? '') . ' · ' . ($seccion->grado->nombre ?? '') . ' "' . ($seccion->nombre ?? '') . '" · ' . ($periodo->nombre ?? ''),
+    'orientacion' => 'horizontal',
+])
 <div class="datos"><b>Grado:</b> {{ $seccion->grado->nombre ?? '—' }} &nbsp; <b>Sección:</b> {{ $seccion->nombre ?? '—' }} &nbsp; <b>Nivel:</b> {{ $seccion->grado->nivel->nombre ?? '—' }} &nbsp; <b>Periodo:</b> {{ $periodo->nombre ?? '—' }}</div>
 <table><tr><th>N°</th><th>DNI</th><th>Apellidos y Nombres</th>@foreach($areas as $a)<th>{{ $a->nombre }}</th>@endforeach</tr>
 @foreach($filas as $i => $f)<tr><td>{{ $i + 1 }}</td><td>{{ $f['matricula']->estudiante->dni ?? '—' }}</td><td>{{ $f['matricula']->estudiante->apellidos ?? '' }}, {{ $f['matricula']->estudiante->nombres ?? '' }}</td>@foreach($areas as $a)@php $d = $f['areas'][$a->id] ?? null; @endphp<td class="niv {{ $d['nivel_logro_area'] ?? '' }}">{{ $d['nivel_logro_area'] ?? '—' }}@if(!empty($d['competencias']))<br><small>@foreach($d['competencias'] as $c){{ mb_substr($c['nombre'], 0, 3) }}:{{ $c['nivel_final'] ?? '—' }} @endforeach</small>@endif</td>@endforeach</tr>@endforeach

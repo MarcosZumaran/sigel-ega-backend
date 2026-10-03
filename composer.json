@@ -11,9 +11,10 @@
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "paperdoc-dev/paperdoc-lib": "^1.1",
         "phpoffice/phpspreadsheet": "^5.9",
         "phpoffice/phpword": "^1.4",
-        "smalot/pdfparser": "^2.12",
+        "prinsfrank/pdfparser": "^3.5",
         "spatie/laravel-backup": "^10.3"
     },
     "require-dev": {

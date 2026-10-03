@@ -35,6 +35,8 @@ class MatriculaService
     public function create(array $data): Matricula
     {
         $this->assertPuedeGestionarMatricula();
+        // RM N° 193-2020-MINEDU: default a 'Regular' si no viene.
+        $data['tipo_vacante'] ??= 'Regular';
         $this->validarLogicaEscuela($data);
 
         return DB::transaction(function () use ($data) {
@@ -91,6 +93,12 @@ class MatriculaService
         $seccionId = $data['seccion_id'] ?? null;
         $periodoId = $data['periodo_id'] ?? null;
         $fecha = $data['fecha'] ?? null;
+
+        // RM N° 193-2020-MINEDU: tipo de vacante Regular, Ampliada o Virtual.
+        $tipoVacante = $data['tipo_vacante'] ?? 'Regular';
+        if (! in_array($tipoVacante, ['Regular', 'Ampliada', 'Virtual'], true)) {
+            throw ValidationException::withMessages(['tipo_vacante' => 'El tipo de vacante debe ser Regular, Ampliada o Virtual (RM N° 193-2020-MINEDU).']);
+        }
 
         if ($estudianteId && $seccionId) {
             $est = Estudiante::find($estudianteId);

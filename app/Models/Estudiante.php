@@ -8,6 +8,7 @@ use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Estudiante extends Model
 {
@@ -21,7 +22,17 @@ class Estudiante extends Model
         'nombres',
         'apellidos',
         'fecha_nacimiento',
+        'pais_nacimiento',
+        'departamento_nacimiento',
+        'provincia_nacimiento',
+        'distrito_nacimiento',
         'sexo',
+        'lengua_materna',
+        'autoidentificacion_etnica',
+        'tiene_discapacidad',
+        'tipo_discapacidad',
+        'grado_discapacidad',
+        'tiene_certificado_discapacidad',
         'direccion',
         'telefono',
         'email',
@@ -40,6 +51,8 @@ class Estudiante extends Model
             'grado_id' => 'integer',
             'estado_id' => 'integer',
             'apoderado_id' => 'integer',
+            'tiene_discapacidad' => 'boolean',
+            'tiene_certificado_discapacidad' => 'boolean',
         ];
     }
 
@@ -67,6 +80,14 @@ class Estudiante extends Model
     public function apoderado(): BelongsTo
     {
         return $this->belongsTo(Apoderado::class, 'apoderado_id', 'id');
+    }
+
+    /**
+     * Necesidad educativa especial del estudiante (0..1, única por estudiante_id).
+     */
+    public function necesidadEspecial(): HasOne
+    {
+        return $this->hasOne(\App\Models\NecesidadEspecial::class, 'estudiante_id', 'id');
     }
 
     /**

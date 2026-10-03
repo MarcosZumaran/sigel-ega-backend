@@ -193,7 +193,7 @@ class WordBuilderService
                     $fontStyle['bold'] = true;
                 }
 
-                $cell->addText($texto, $fontStyle);
+                $cell->addText($texto, $fontStyle, ['keepNext' => true]);
             }
         }
 
@@ -238,10 +238,10 @@ class WordBuilderService
                 } else {
                     $cellFoto->addText('FOTO DEL', [
                         'name' => self::FUENTE, 'size' => 7, 'color' => '94A3B8',
-                    ], ['alignment' => Jc::CENTER, 'spaceBefore' => 600]);
+                    ], ['alignment' => Jc::CENTER, 'spaceBefore' => 600, 'keepNext' => true]);
                     $cellFoto->addText('ESTUDIANTE', [
                         'name' => self::FUENTE, 'size' => 7, 'color' => '94A3B8',
-                    ], ['alignment' => Jc::CENTER]);
+                    ], ['alignment' => Jc::CENTER, 'keepNext' => true]);
                 }
             } else {
                 $table->addCell($anchoFoto, ['vMerge' => 'continue']);
@@ -251,13 +251,13 @@ class WordBuilderService
             $cellLabel = $table->addCell($anchoLabel, ['bgColor' => 'F1F5F9']);
             $cellLabel->addText($fila[0], [
                 'name' => self::FUENTE, 'size' => 8, 'bold' => true, 'color' => '475569',
-            ]);
+            ], ['keepNext' => true]);
 
             // Valor
             $cellValor = $table->addCell($anchoValor);
             $cellValor->addText((string) ($fila[1] ?? ''), [
                 'name' => self::FUENTE, 'size' => 8, 'color' => self::COLOR_TEXTO,
-            ]);
+            ], ['keepNext' => true]);
         }
 
         return $this;

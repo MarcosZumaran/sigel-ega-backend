@@ -30,6 +30,7 @@ class WordBuilderService
     private PhpWord $phpWord;
     private $section;
     private string $orientacion;
+    private int $anchoUtil;
 
     public function __construct(string $orientacion = 'portrait')
     {
@@ -38,10 +39,14 @@ class WordBuilderService
         $this->phpWord->setDefaultFontName(self::FUENTE);
         $this->phpWord->setDefaultFontSize(9);
 
+        $margen = 500;
+        $anchoPagina = $orientacion === 'landscape' ? 16838 : 11906;
+        $this->anchoUtil = $anchoPagina - (2 * $margen);
+
         $this->section = $this->phpWord->addSection([
             'orientation' => $orientacion,
-            'marginTop' => 500, 'marginBottom' => 500,
-            'marginLeft' => 500, 'marginRight' => 500,
+            'marginTop' => $margen, 'marginBottom' => $margen,
+            'marginLeft' => $margen, 'marginRight' => $margen,
         ]);
     }
 
@@ -52,33 +57,29 @@ class WordBuilderService
     {
         $ie = $this->obtenerDatosIE();
 
-        // Nombre IE
+        // Línea 1: Nombre IE
         $this->section->addText($ie['nombre'], [
             'name' => self::FUENTE, 'size' => 13, 'bold' => true, 'color' => self::COLOR_PRIMARIO,
         ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
 
-        // Línea de datos institucionales
-        $linea2 = array_filter([
-            $ie['codigo_modular'] ? 'Código Modular: '.$ie['codigo_modular'] : null,
-            $ie['resolucion_creacion'] ? 'Resolución: '.$ie['resolucion_creacion'] : null,
-            $ie['ugel'] ? 'UGEL: '.$ie['ugel'] : null,
-            $ie['dre'] ? 'DRE: '.$ie['dre'] : null,
-        ]);
-        if (! empty($linea2)) {
-            $this->section->addText(implode(' · ', $linea2), [
-                'name' => self::FUENTE, 'size' => 8, 'color' => '334155',
-            ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
-        }
+        // Línea 2: SIEMPRE visible (con placeholders si vacío)
+        $linea2 = 'Código Modular: '.($ie['codigo_modular'] ?: '___________')
+            .' · Resolución: '.($ie['resolucion_creacion'] ?: '___________')
+            .' · UGEL: '.($ie['ugel'] ?: '___________')
+            .' · DRE: '.($ie['dre'] ?: '___________');
 
-        // Dirección/teléfono
-        $linea3 = array_filter([
-            $ie['direccion'], $ie['telefono'] ? 'Tel: '.$ie['telefono'] : null, $ie['correo'],
-        ]);
-        if (! empty($linea3)) {
-            $this->section->addText(implode(' · ', $linea3), [
-                'name' => self::FUENTE, 'size' => 7.5, 'color' => self::COLOR_MUTED,
-            ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
-        }
+        $this->section->addText($linea2, [
+            'name' => self::FUENTE, 'size' => 8, 'color' => '334155',
+        ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
+
+        // Línea 3: SIEMPRE visible
+        $linea3 = ($ie['direccion'] ?: '___________')
+            .' · Tel: '.($ie['telefono'] ?: '___________')
+            .' · '.($ie['correo'] ?: '___________');
+
+        $this->section->addText($linea3, [
+            'name' => self::FUENTE, 'size' => 7.5, 'color' => self::COLOR_MUTED,
+        ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
 
         // Título del documento
         $this->section->addText($titulo, [
@@ -88,11 +89,18 @@ class WordBuilderService
         if ($subtitulo) {
             $this->section->addText($subtitulo, [
                 'name' => self::FUENTE, 'size' => 9, 'color' => '475569',
-            ], ['alignment' => Jc::CENTER, 'spaceAfter' => 100]);
+            ], ['alignment' => Jc::CENTER]);
         }
 
-        // Línea separadora
-        $this->section->addText('', [], ['borderBottomSize' => 12, 'borderBottomColor' => self::COLOR_PRIMARIO]);
+        // Línea separadora gruesa
+        $this->section->addText(' ', [
+            'name' => self::FUENTE, 'size' => 1,
+        ], [
+            'alignment' => Jc::CENTER,
+            'borderBottomSize' => 12,
+            'borderBottomColor' => self::COLOR_PRIMARIO,
+            'spaceAfter' => 200,
+        ]);
 
         return $this;
     }
@@ -102,14 +110,14 @@ class WordBuilderService
      */
     public function addSeccionTitulo(string $titulo): self
     {
-        $table = $this->section->addTable(['borderSize' => 0, 'cellMargin' => 60]);
-        $table->addRow();
-        $cell = $table->addCell(9000, ['bgColor' => self::COLOR_PRIMARIO]);
-        $cell->addText($titulo, [
+        $this->section->addText($titulo, [
             'name' => self::FUENTE, 'size' => 9, 'bold' => true, 'color' => 'FFFFFF',
+        ], [
+            'shading' => ['fill' => self::COLOR_PRIMARIO],
+            'alignment' => Jc::LEFT,
+            'spaceBefore' => 100,
+            'spaceAfter' => 100,
         ]);
-        // Espacio después
-        $this->section->addTextBreak(1);
 
         return $this;
     }
@@ -123,7 +131,7 @@ class WordBuilderService
      */
     public function addTabla(array $headers, array $rows, array $opciones = []): self
     {
-        $anchoTotal = $this->orientacion === 'landscape' ? 13500 : 9000;
+        $anchoTotal = $this->anchoUtil;
         $numColumnas = ! empty($headers) ? count($headers) : (count($rows[0] ?? []) ?: 2);
         $anchoDefault = (int) ($anchoTotal / $numColumnas);
         $anchos = $opciones['anchos'] ?? array_fill(0, $numColumnas, $anchoDefault);
@@ -151,7 +159,12 @@ class WordBuilderService
             $valores = is_array($row) ? array_values($row) : [$row];
 
             foreach ($valores as $i => $valor) {
+                $esColumnaLabel = empty($headers) && $i === 0;
+
                 $bgColor = ($idx % 2 === 1) ? self::COLOR_FILA_ALTERNA : null;
+                if ($esColumnaLabel) {
+                    $bgColor = 'F1F5F9';
+                }
 
                 // Colorear niveles CNEB si aplica
                 $esNivelCneb = in_array($valor, ['AD', 'A', 'B', 'C'], true);
@@ -170,13 +183,81 @@ class WordBuilderService
 
                 $cell = $table->addCell($anchos[$i] ?? $anchoDefault, $estiloCelda);
                 $texto = (string) ($valor ?? '');
+
                 $fontStyle = ['name' => self::FUENTE, 'size' => 8, 'color' => self::COLOR_TEXTO];
+                if ($esColumnaLabel) {
+                    $fontStyle['bold'] = true;
+                    $fontStyle['color'] = '475569';
+                }
                 if ($esNivelCneb) {
                     $fontStyle['bold'] = true;
                 }
 
                 $cell->addText($texto, $fontStyle);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Agrega una tabla campo→valor con columna de foto fusionada verticalmente.
+     *
+     * @param  array  $filas [['Label', 'Valor'], ...]
+     * @param  string|null  $rutaFoto Ruta a la foto del estudiante (opcional)
+     */
+    public function addFotoConDatos(array $filas, ?string $rutaFoto = null): self
+    {
+        $anchoFoto = 2000;
+        $anchoLabel = 2500;
+        $anchoValor = $this->anchoUtil - $anchoFoto - $anchoLabel;
+
+        $table = $this->section->addTable([
+            'borderSize' => 6,
+            'borderColor' => self::COLOR_BORDE,
+            'cellMargin' => 80,
+            'width' => $this->anchoUtil,
+        ]);
+
+        foreach ($filas as $i => $fila) {
+            $table->addRow();
+
+            // Columna foto (vMerge restart en primera fila)
+            if ($i === 0) {
+                $cellFoto = $table->addCell($anchoFoto, [
+                    'vMerge' => 'restart',
+                    'valign' => 'center',
+                    'bgColor' => 'F8FAFC',
+                ]);
+
+                if ($rutaFoto && file_exists($rutaFoto)) {
+                    $cellFoto->addImage($rutaFoto, [
+                        'width' => 90, 'height' => 120,
+                        'alignment' => Jc::CENTER,
+                    ]);
+                } else {
+                    $cellFoto->addText('FOTO DEL', [
+                        'name' => self::FUENTE, 'size' => 7, 'color' => '94A3B8',
+                    ], ['alignment' => Jc::CENTER, 'spaceBefore' => 600]);
+                    $cellFoto->addText('ESTUDIANTE', [
+                        'name' => self::FUENTE, 'size' => 7, 'color' => '94A3B8',
+                    ], ['alignment' => Jc::CENTER]);
+                }
+            } else {
+                $table->addCell($anchoFoto, ['vMerge' => 'continue']);
+            }
+
+            // Label
+            $cellLabel = $table->addCell($anchoLabel, ['bgColor' => 'F1F5F9']);
+            $cellLabel->addText($fila[0], [
+                'name' => self::FUENTE, 'size' => 8, 'bold' => true, 'color' => '475569',
+            ]);
+
+            // Valor
+            $cellValor = $table->addCell($anchoValor);
+            $cellValor->addText((string) ($fila[1] ?? ''), [
+                'name' => self::FUENTE, 'size' => 8, 'color' => self::COLOR_TEXTO,
+            ]);
         }
 
         return $this;
@@ -191,21 +272,42 @@ class WordBuilderService
     {
         $this->section->addTextBreak(2);
 
-        $anchoTotal = $this->orientacion === 'landscape' ? 13500 : 9000;
         $numFirmas = count($firmas) ?: 1;
-        $anchoFirma = (int) ($anchoTotal / $numFirmas);
+        $anchoFirma = (int) ($this->anchoUtil / $numFirmas);
 
-        $table = $this->section->addTable(['borderSize' => 0, 'cellMargin' => 60]);
+        // Tabla SIN bordes
+        $table = $this->section->addTable([
+            'borderSize' => 0,
+            'borderColor' => 'FFFFFF',
+            'cellMargin' => 0,
+            'width' => $this->anchoUtil,
+        ]);
+
         $table->addRow();
 
         foreach ($firmas as $firma) {
-            $cell = $table->addCell($anchoFirma, ['borderSize' => 0, 'valign' => 'bottom']);
-            $cell->addText('_________________________', [
-                'name' => self::FUENTE, 'size' => 9, 'color' => '000000',
-            ], ['alignment' => Jc::CENTER, 'spaceBefore' => 400]);
+            $cell = $table->addCell($anchoFirma, [
+                'borderSize' => 0,
+                'borderColor' => 'FFFFFF',
+                'valign' => 'bottom',
+            ]);
+
+            // Línea decorativa (párrafo vacío con border-bottom)
+            $cell->addText(' ', [
+                'name' => self::FUENTE, 'size' => 1,
+            ], [
+                'alignment' => Jc::CENTER,
+                'borderBottomSize' => 6,
+                'borderBottomColor' => '000000',
+                'spaceBefore' => 600,
+            ]);
+
+            // Nombre
             $cell->addText($firma['nombre'] ?? '', [
                 'name' => self::FUENTE, 'size' => 8, 'bold' => true, 'color' => self::COLOR_TEXTO,
-            ], ['alignment' => Jc::CENTER, 'spaceAfter' => 0]);
+            ], ['alignment' => Jc::CENTER, 'spaceBefore' => 100]);
+
+            // Detalle
             if (! empty($firma['detalle'])) {
                 $cell->addText($firma['detalle'], [
                     'name' => self::FUENTE, 'size' => 7, 'color' => self::COLOR_MUTED,

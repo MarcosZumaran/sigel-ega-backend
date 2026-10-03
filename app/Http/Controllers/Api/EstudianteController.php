@@ -7,7 +7,7 @@ use App\Models\Estudiante;
 use App\Services\EstudianteService;
 use App\Services\EvaluacionService;
 use App\Services\FumService;
-use App\Services\WordExportService;
+use App\Services\BoletaWordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -84,6 +84,25 @@ class EstudianteController extends Controller
             ->download("informe-progreso-{$id}.pdf");
     }
 
+    /**
+     * Genera el documento Word del Informe de Progreso (boleta CNEB).
+     */
+    public function informeProgresoWord(Request $request, int $id, BoletaWordService $boleta)
+    {
+        $request->validate([
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+        ]);
+
+        $estudiante = Estudiante::findOrFail($id);
+
+        $rutaTemp = $boleta->generarDocx($estudiante, $request->query('periodo_id') ? (int) $request->query('periodo_id') : null);
+
+        $nombre = 'BOLETA_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.docx';
+
+        return response()->download($rutaTemp, $nombre, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
+    }
     /**
      * Retorna los datos JSON de la FUM (para previsualización en frontend).
      */

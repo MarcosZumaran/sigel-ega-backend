@@ -229,6 +229,7 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
         Route::delete('/{id}', [EstudianteController::class, 'destroy'])->middleware('admin');
         Route::get('/{id}/informe-progreso', [EstudianteController::class, 'informeProgreso'])->whereNumber('id');
         Route::get('/{id}/informe-progreso.pdf', [EstudianteController::class, 'informeProgresoPdf'])->whereNumber('id');
+        Route::get('/{id}/informe-progreso.docx', [EstudianteController::class, 'informeProgresoWord'])->whereNumber('id');
         Route::get('/{id}/fum', [EstudianteController::class, 'fum'])->whereNumber('id');
         Route::get('/{id}/fum.pdf', [EstudianteController::class, 'fumPdf'])->whereNumber('id');
         Route::get('/{id}/fum.docx', [EstudianteController::class, 'fumWord'])->whereNumber('id');

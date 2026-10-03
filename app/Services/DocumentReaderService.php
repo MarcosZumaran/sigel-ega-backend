@@ -33,7 +33,9 @@ class DocumentReaderService
 
         foreach ($doc->getSections() as $section) {
             foreach ($section->getElements() as $element) {
-                $elementos[] = $element;
+                $elementos[] = method_exists($element, 'getPlainText')
+                    ? $element->getPlainText()
+                    : (string) $element;
             }
         }
 

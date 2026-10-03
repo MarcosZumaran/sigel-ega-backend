@@ -84,9 +84,9 @@ class FumService
             'Año escolar: '.($datos['periodo']?->anio ?? date('Y'))
         );
 
-        // Sección 1: Datos del estudiante
+        // Sección 1: Datos del estudiante (con foto fusionada)
         $builder->addSeccionTitulo('DATOS DEL ESTUDIANTE');
-        $builder->addTabla([], [
+        $builder->addFotoConDatos([
             ['Apellidos y Nombres', trim(($estudiante->apellidos ?? '').', '.($estudiante->nombres ?? ''))],
             ['DNI', $estudiante->dni ?? ''],
             ['Código', $estudiante->codigo_estudiante ?? ''],
@@ -101,7 +101,7 @@ class FumService
             ['Lengua materna', $estudiante->lengua_materna ?? ''],
             ['Autoidentificación étnica', $estudiante->autoidentificacion_etnica ?? ''],
             ['Dirección', $estudiante->direccion ?? ''],
-        ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);
+        ]);
 
         // Sección 2: Matrícula
         $builder->addSeccionTitulo('INFORMACIÓN DE MATRÍCULA');

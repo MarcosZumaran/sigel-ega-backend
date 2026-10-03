@@ -8,7 +8,7 @@
 | Nómina de matrícula | ✅ | — | ✅ |
 | Orden de mérito | ✅ | — | ✅ |
 | FUM | ✅ | — | ✅ |
-| Boletín / Informe | ✅ | — | — |
+| Boletín / Informe | ✅ | — | ✅ |
 
 ### Endpoints
 
@@ -23,6 +23,15 @@
 - `GET /reportes/nomina-matricula.docx?seccion_id=X&periodo_id=Y`
 - `GET /reportes/orden-merito.docx?grado_id=X&periodo_id=Y`
 - `GET /estudiantes/{id}/fum.docx`
+- `GET /estudiantes/{id}/informe-progreso.docx`
+
+### Generación programática (WordBuilderService)
+
+Todos los documentos oficiales se construyen de forma programática
+(`ActaWordService`, `NominaWordService`, `OrdenWordService`, `BoletaWordService`,
+`FumService::generarDocx` sobre `WordBuilderService`): membrete, tablas con
+colores CNEB, firmas y pie. `WordExportService::desdeVista()` queda solo como
+fallback genérico HTML→DOCX (ya sin usos en documentos oficiales).
 
 ### Limitaciones de Word (.docx)
 - Tablas simples: OK

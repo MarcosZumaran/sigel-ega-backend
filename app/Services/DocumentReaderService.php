@@ -24,7 +24,7 @@ class DocumentReaderService
 
     /**
      * Extrae texto de un DOCX.
-     * Retorna un array de elementos estructurados (párrafos, tablas).
+     * Retorna un array de elementos: strings (párrafos) y arrays de filas (tablas).
      */
     public function leerDocx(string $ruta): array
     {
@@ -33,9 +33,23 @@ class DocumentReaderService
 
         foreach ($doc->getSections() as $section) {
             foreach ($section->getElements() as $element) {
-                $elementos[] = method_exists($element, 'getPlainText')
-                    ? $element->getPlainText()
-                    : (string) $element;
+                if (method_exists($element, 'getRows')) {
+                    $filas = [];
+                    foreach ($element->getRows() as $row) {
+                        $celdas = [];
+                        foreach ($row->getCells() as $cell) {
+                            $celdas[] = method_exists($cell, 'getPlainText')
+                                ? $cell->getPlainText()
+                                : (string) $cell;
+                        }
+                        $filas[] = $celdas;
+                    }
+                    $elementos[] = $filas;
+                } else {
+                    $elementos[] = method_exists($element, 'getPlainText')
+                        ? $element->getPlainText()
+                        : (string) $element;
+                }
             }
         }
 

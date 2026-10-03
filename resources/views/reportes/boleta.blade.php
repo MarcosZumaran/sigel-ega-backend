@@ -1,5 +1,17 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><style>body{font-family:DejaVu Sans,sans-serif;font-size:9px;color:#1e293b}@page{size:A4;margin:18mm 14mm}.head{background:#1E3A8A;color:#fff;padding:10px 12px;border-radius:4px}.head h1{margin:0;font-size:16px}.head p{margin:2px 0 0;font-size:10px}.datos{margin:10px 0;border:1px solid #cbd5e1;border-radius:4px;padding:6px 10px;font-size:10px}.datos b{color:#1E3A8A}table{width:100%;border-collapse:collapse;margin-top:6px}th{background:#1E3A8A;color:#fff;padding:4px 5px;font-size:8px}td{padding:3px 5px;border:1px solid #e2e8f0;vertical-align:top}.area{background:#eff6ff;font-weight:bold;color:#1E3A8A}.niv{font-weight:bold;text-align:center}.AD{color:#1E3A8A}.A{color:#16a34a}.B{color:#b45309}.C{color:#dc2626}.firmas{margin-top:26px;width:100%}.firmas td{border:none;text-align:center;font-size:9px;padding-top:30px}.firmas .lin{border-top:1px solid #1e293b;margin:0 30px}</style></head><body>
-<div class="head"><h1>SIGEL-EGA — Informe de Progreso del Estudiante (CNEB)</h1><p>Institución Educativa Pública EGA · Evaluación por competencias (RVM 094-2020 y 048-2024)</p></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Informe de Progreso del Estudiante</title>
+    @include('reportes.partials.estilos', ['orientacion' => 'vertical'])
+</head>
+<body>
+
+@include('reportes.partials.membrete', [
+    'titulo' => 'INFORME DE PROGRESO DEL ESTUDIANTE (CNEB)',
+    'subtitulo' => 'Periodo ' . ($informe['periodo']['nombre'] ?? ''),
+    'orientacion' => 'vertical',
+])
 <div class="datos"><b>Estudiante:</b> {{ $informe['estudiante']['nombres'] ?? '' }} {{ $informe['estudiante']['apellidos'] ?? '' }} &nbsp; <b>DNI:</b> {{ $informe['estudiante']['dni'] ?? '—' }} &nbsp; <b>Periodo:</b> {{ $informe['periodo']['nombre'] ?? '—' }}</div>
 <table><tr><th>Área / Competencia</th><th>B1</th><th>B2</th><th>B3</th><th>B4</th><th>Final</th><th>Conclusión descriptiva</th></tr>
 @foreach($informe['areas'] as $a)<tr><td colspan="7" class="area">{{ $a['nombre'] }} @if($a['nivel_logro_area']) — Nivel del área: <span class="niv {{ $a['nivel_logro_area'] }}">{{ $a['nivel_logro_area'] }}</span>@endif</td></tr>

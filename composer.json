@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "sigel-ega/backend",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Sistema de Gestión Escolar Local para la I.E. Pública EGA",
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
@@ -11,8 +11,10 @@
         "laravel/framework": "^13.17",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "paperdoc-dev/paperdoc-lib": "^1.1",
         "phpoffice/phpspreadsheet": "^5.9",
-        "smalot/pdfparser": "^2.12",
+        "phpoffice/phpword": "^1.4",
+        "prinsfrank/pdfparser": "^3.5",
         "spatie/laravel-backup": "^10.3"
     },
     "require-dev": {

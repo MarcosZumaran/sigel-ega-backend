@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c4b4cf5481be2b0cc07dd946fcee8e31",
+    "content-hash": "4c284f8a1d47aaf4f9b03ea3b627070f",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -3168,6 +3168,144 @@
             "time": "2026-02-16T23:10:27+00:00"
         },
         {
+            "name": "paperdoc-dev/paperdoc-lib",
+            "version": "v1.1.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/paperdoc-dev/paperdoc-lib.git",
+                "reference": "a0ffe9962b8f92da404c11ee36a5ad3aefdfdda3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/paperdoc-dev/paperdoc-lib/zipball/a0ffe9962b8f92da404c11ee36a5ad3aefdfdda3",
+                "reference": "a0ffe9962b8f92da404c11ee36a5ad3aefdfdda3",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-mbstring": "*",
+                "ext-zip": "*",
+                "ext-zlib": "*",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.2",
+                "phpunit/phpunit": "^11.0"
+            },
+            "suggest": {
+                "ext-curl": "Preferred HTTP transport for the built-in LLM providers (falls back to PHP streams)",
+                "illuminate/support": "^11.0|^12.0 Required for Laravel integration (ServiceProvider, Facade)"
+            },
+            "bin": [
+                "bin/paperdoc"
+            ],
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Paperdoc": "Paperdoc\\Facades\\Paperdoc"
+                    },
+                    "providers": [
+                        "Paperdoc\\PaperdocServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Paperdoc\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Paperdoc",
+                    "email": "support@paperdoc.dev"
+                }
+            ],
+            "description": "A zero-dependency PHP library for generating, parsing and converting documents — PDF, DOCX, XLSX, PPTX, HTML, Markdown, CSV and legacy Office formats",
+            "homepage": "https://paperdoc.dev",
+            "keywords": [
+                "converter",
+                "csv",
+                "document",
+                "docx",
+                "html",
+                "laravel",
+                "markdown",
+                "parser",
+                "pdf",
+                "pptx",
+                "writer",
+                "xlsx"
+            ],
+            "support": {
+                "issues": "https://github.com/paperdoc-dev/paperdoc-lib/issues",
+                "source": "https://github.com/paperdoc-dev/paperdoc-lib/tree/v1.1.5"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/AkramZerarka",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-08-29T20:42:07+00:00"
+        },
+        {
+            "name": "phpoffice/math",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPOffice/Math.git",
+                "reference": "fc31c8f57a7a81f962cbf389fd89f4d9d06fc99a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPOffice/Math/zipball/fc31c8f57a7a81f962cbf389fd89f4d9d06fc99a",
+                "reference": "fc31c8f57a7a81f962cbf389fd89f4d9d06fc99a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-xml": "*",
+                "php": "^7.1|^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^0.12.88 || ^1.0.0",
+                "phpunit/phpunit": "^7.0 || ^9.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PhpOffice\\Math\\": "src/Math/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Progi1984",
+                    "homepage": "https://lefevre.dev"
+                }
+            ],
+            "description": "Math - Manipulate Math Formula",
+            "homepage": "https://phpoffice.github.io/Math/",
+            "keywords": [
+                "MathML",
+                "officemathml",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/PHPOffice/Math/issues",
+                "source": "https://github.com/PHPOffice/Math/tree/0.3.0"
+            },
+            "time": "2025-05-29T08:31:49+00:00"
+        },
+        {
             "name": "phpoffice/phpspreadsheet",
             "version": "5.9.0",
             "source": {
@@ -3277,6 +3415,114 @@
             "time": "2026-07-12T19:17:39+00:00"
         },
         {
+            "name": "phpoffice/phpword",
+            "version": "1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PHPOffice/PHPWord.git",
+                "reference": "6d75328229bc93790b37e93741adf70646cea958"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PHPOffice/PHPWord/zipball/6d75328229bc93790b37e93741adf70646cea958",
+                "reference": "6d75328229bc93790b37e93741adf70646cea958",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-gd": "*",
+                "ext-json": "*",
+                "ext-xml": "*",
+                "ext-zip": "*",
+                "php": "^7.1|^8.0",
+                "phpoffice/math": "^0.3"
+            },
+            "require-dev": {
+                "dompdf/dompdf": "^2.0 || ^3.0",
+                "ext-libxml": "*",
+                "friendsofphp/php-cs-fixer": "^3.3",
+                "mpdf/mpdf": "^7.0 || ^8.0",
+                "phpmd/phpmd": "^2.13",
+                "phpstan/phpstan": "^0.12.88 || ^1.0.0",
+                "phpstan/phpstan-phpunit": "^1.0 || ^2.0",
+                "phpunit/phpunit": ">=7.0",
+                "symfony/process": "^4.4 || ^5.0",
+                "tecnickcom/tcpdf": "^6.5"
+            },
+            "suggest": {
+                "dompdf/dompdf": "Allows writing PDF",
+                "ext-xmlwriter": "Allows writing OOXML and ODF",
+                "ext-xsl": "Allows applying XSL style sheet to headers, to main document part, and to footers of an OOXML template"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PhpOffice\\PhpWord\\": "src/PhpWord"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Baker"
+                },
+                {
+                    "name": "Gabriel Bull",
+                    "email": "me@gabrielbull.com",
+                    "homepage": "http://gabrielbull.com/"
+                },
+                {
+                    "name": "Franck Lefevre",
+                    "homepage": "https://rootslabs.net/blog/"
+                },
+                {
+                    "name": "Ivan Lanin",
+                    "homepage": "http://ivan.lanin.org"
+                },
+                {
+                    "name": "Roman Syroeshko",
+                    "homepage": "http://ru.linkedin.com/pub/roman-syroeshko/34/a53/994/"
+                },
+                {
+                    "name": "Antoine de Troostembergh"
+                }
+            ],
+            "description": "PHPWord - A pure PHP library for reading and writing word processing documents (OOXML, ODF, RTF, HTML, PDF)",
+            "homepage": "https://phpoffice.github.io/PHPWord/",
+            "keywords": [
+                "ISO IEC 29500",
+                "OOXML",
+                "Office Open XML",
+                "OpenDocument",
+                "OpenXML",
+                "PhpOffice",
+                "PhpWord",
+                "Rich Text Format",
+                "WordprocessingML",
+                "doc",
+                "docx",
+                "html",
+                "odf",
+                "odt",
+                "office",
+                "pdf",
+                "php",
+                "reader",
+                "rtf",
+                "template",
+                "template processor",
+                "word",
+                "writer"
+            ],
+            "support": {
+                "issues": "https://github.com/PHPOffice/PHPWord/issues",
+                "source": "https://github.com/PHPOffice/PHPWord/tree/1.4.0"
+            },
+            "time": "2025-06-05T10:32:36+00:00"
+        },
+        {
             "name": "phpoption/phpoption",
             "version": "1.10.0",
             "source": {
@@ -3350,6 +3596,152 @@
                 }
             ],
             "time": "2026-08-24T00:54:40+00:00"
+        },
+        {
+            "name": "prinsfrank/glyph-lists",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PrinsFrank/glyph-lists.git",
+                "reference": "7e06bb5b393dcf74a6ef59741582f365ca346239"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PrinsFrank/glyph-lists/zipball/7e06bb5b393dcf74a6ef59741582f365ca346239",
+                "reference": "7e06bb5b393dcf74a6ef59741582f365ca346239",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.87",
+                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PrinsFrank\\GlyphLists\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Pre-parsed glyph lists as enums",
+            "support": {
+                "issues": "https://github.com/PrinsFrank/glyph-lists/issues",
+                "source": "https://github.com/PrinsFrank/glyph-lists/tree/v1.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/PrinsFrank",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-09-18T18:11:26+00:00"
+        },
+        {
+            "name": "prinsfrank/markdown-dom",
+            "version": "v0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PrinsFrank/markdown-dom.git",
+                "reference": "df70203af7ea5d6d7cd93b8fe37f000cb428a509"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PrinsFrank/markdown-dom/zipball/df70203af7ea5d6d7cd93b8fe37f000cb428a509",
+                "reference": "df70203af7ea5d6d7cd93b8fe37f000cb428a509",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.95",
+                "phpstan/phpstan": "^2.2",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/phpunit": "^11.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PrinsFrank\\MarkDownDom\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A minimal library to generate MarkDown DOM elements",
+            "support": {
+                "issues": "https://github.com/PrinsFrank/markdown-dom/issues",
+                "source": "https://github.com/PrinsFrank/markdown-dom/tree/v0.2.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/PrinsFrank",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-08-20T16:43:24+00:00"
+        },
+        {
+            "name": "prinsfrank/pdfparser",
+            "version": "v3.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PrinsFrank/pdfparser.git",
+                "reference": "9fbce93ffd432696a7a9a73b43795c90827fdc35"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PrinsFrank/pdfparser/zipball/9fbce93ffd432696a7a9a73b43795c90827fdc35",
+                "reference": "9fbce93ffd432696a7a9a73b43795c90827fdc35",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gd": "*",
+                "ext-iconv": "*",
+                "ext-zlib": "*",
+                "php": "^8.2",
+                "prinsfrank/glyph-lists": "^1.0",
+                "prinsfrank/markdown-dom": "^0.2.1"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.65",
+                "phpstan/phpstan": "2.2.14",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2",
+                "phpunit/phpunit": "^11.5",
+                "symfony/yaml": "7.4.18"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PrinsFrank\\PdfParser\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHP library to Read and extract text & images from PDFs - Fast & Low memory - Built from scratch",
+            "support": {
+                "issues": "https://github.com/PrinsFrank/pdfparser/issues",
+                "source": "https://github.com/PrinsFrank/pdfparser/tree/v3.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/PrinsFrank",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-09-30T19:00:17+00:00"
         },
         {
             "name": "psr/clock",
@@ -4075,57 +4467,6 @@
                 "source": "https://github.com/MyIntervals/PHP-CSS-Parser/tree/v9.4.0"
             },
             "time": "2026-06-18T15:10:53+00:00"
-        },
-        {
-            "name": "smalot/pdfparser",
-            "version": "v2.12.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/smalot/pdfparser.git",
-                "reference": "2cfa0d92bd557875c9f52a75fde0e8392302a354"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/smalot/pdfparser/zipball/2cfa0d92bd557875c9f52a75fde0e8392302a354",
-                "reference": "2cfa0d92bd557875c9f52a75fde0e8392302a354",
-                "shasum": ""
-            },
-            "require": {
-                "ext-iconv": "*",
-                "ext-zlib": "*",
-                "php": ">=7.1",
-                "symfony/polyfill-mbstring": "^1.18"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Smalot\\PdfParser\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0"
-            ],
-            "authors": [
-                {
-                    "name": "Sebastien MALOT",
-                    "email": "sebastien@malot.fr"
-                }
-            ],
-            "description": "Pdf parser library. Can read and extract information from pdf file.",
-            "homepage": "https://www.pdfparser.org",
-            "keywords": [
-                "extract",
-                "parse",
-                "parser",
-                "pdf",
-                "text"
-            ],
-            "support": {
-                "issues": "https://github.com/smalot/pdfparser/issues",
-                "source": "https://github.com/smalot/pdfparser/tree/v2.12.5"
-            },
-            "time": "2026-04-17T11:37:58+00:00"
         },
         {
             "name": "spatie/db-dumper",

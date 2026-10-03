@@ -229,6 +229,10 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
         Route::delete('/{id}', [EstudianteController::class, 'destroy'])->middleware('admin');
         Route::get('/{id}/informe-progreso', [EstudianteController::class, 'informeProgreso'])->whereNumber('id');
         Route::get('/{id}/informe-progreso.pdf', [EstudianteController::class, 'informeProgresoPdf'])->whereNumber('id');
+        Route::get('/{id}/informe-progreso.docx', [EstudianteController::class, 'informeProgresoWord'])->whereNumber('id');
+        Route::get('/{id}/fum', [EstudianteController::class, 'fum'])->whereNumber('id');
+        Route::get('/{id}/fum.pdf', [EstudianteController::class, 'fumPdf'])->whereNumber('id');
+        Route::get('/{id}/fum.docx', [EstudianteController::class, 'fumWord'])->whereNumber('id');
         Route::post('/{id}/restore', [EstudianteController::class, 'restore'])->middleware('admin');
     });
 
@@ -334,6 +338,9 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
         Route::get('/acta-evaluacion', [ReporteController::class, 'actaEvaluacion']);
         Route::get('/nomina-matricula', [ReporteController::class, 'nominaMatricula']);
         Route::get('/orden-merito', [ReporteController::class, 'ordenMerito']);
+        Route::get('/acta-evaluacion.docx', [ReporteController::class, 'actaEvaluacionWord']);
+        Route::get('/nomina-matricula.docx', [ReporteController::class, 'nominaMatriculaWord']);
+        Route::get('/orden-merito.docx', [ReporteController::class, 'ordenMeritoWord']);
     });
     Route::prefix('reportes')->whereNumber('id')->group(function () {
         Route::get('/', [ReporteController::class, 'index']); // historial filtrable (default último año)

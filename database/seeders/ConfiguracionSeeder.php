@@ -17,6 +17,10 @@ class ConfiguracionSeeder extends Seeder
             ['clave' => 'telefono', 'valor' => '', 'descripcion' => 'Teléfono de la institución'],
             ['clave' => 'correo', 'valor' => '', 'descripcion' => 'Correo institucional'],
             ['clave' => 'nota_minima_aprobatoria', 'valor' => '11', 'descripcion' => 'Nota mínima aprobatoria vigente'],
+            // Claves FUM (solo se insertan si no existen; jamás sobrescriben valores configurados)
+            ['clave' => 'resolucion_creacion', 'valor' => '', 'descripcion' => 'Resolución de creación de la IE'],
+            ['clave' => 'ugel', 'valor' => '', 'descripcion' => 'UGEL a la que pertenece la IE'],
+            ['clave' => 'dre', 'valor' => '', 'descripcion' => 'DRE a la que pertenece la IE'],
         ]);
     }
 }

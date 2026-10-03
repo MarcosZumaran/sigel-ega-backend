@@ -7,6 +7,7 @@ use App\Models\Estudiante;
 use App\Services\EstudianteService;
 use App\Services\EvaluacionService;
 use App\Services\FumService;
+use App\Services\WordExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -118,6 +119,30 @@ class EstudianteController extends Controller
         $nombre = 'FUM_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.pdf';
 
         return $pdf->download($nombre);
+    }
+
+    /**
+     * Genera el documento Word oficial de la FUM.
+     */
+    public function fumWord(Request $request, int $id, FumService $fum, WordExportService $word)
+    {
+        $data = $request->validate([
+            'periodo_id' => 'nullable|integer|exists:periodos,id',
+        ]);
+
+        $estudiante = Estudiante::with(['nivel', 'grado', 'estado', 'apoderado'])
+            ->findOrFail($id);
+
+        $datos = $fum->datos($estudiante, $data['periodo_id'] ?? null);
+
+        $rutaTemp = storage_path('app/private/tmp_'.uniqid().'.docx');
+        $word->desdeVista('reportes.fum', $datos, $rutaTemp);
+
+        $nombre = 'FUM_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.docx';
+
+        return response()->download($rutaTemp, $nombre, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ])->deleteFileAfterSend(true);
     }
 
     public function update(Request $request, int $id): JsonResponse

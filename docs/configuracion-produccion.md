@@ -72,3 +72,22 @@ php artisan sigel:restore /ruta/al/backup.zip --force
 
 ### Prueba de restauración recomendada
 Cada mes, verificar que un backup se puede restaurar en entorno de prueba.
+
+## Expiración de Tokens Sanctum (Fase 2.4)
+
+### Configuración
+Los tokens Sanctum expiran a las 8 horas por defecto (`SANCTUM_EXPIRATION=480`).
+Configurable en `.env`:
+
+```
+SANCTUM_EXPIRATION=480  # minutos
+```
+
+### Comportamiento
+- Al expirar, el backend devuelve 401 Unauthorized.
+- El frontend detecta el 401, limpia la sesión y redirige a /login.
+- Al cargar la app, el frontend verifica con `/auth/me` si el token sigue válido.
+
+### Recomendaciones
+- Para jornadas escolares: 480 minutos (8 horas).
+- Para producción rural con conexión intermitente: 720 minutos (12 horas).

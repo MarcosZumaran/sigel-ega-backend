@@ -8,6 +8,7 @@ use App\Services\EstudianteService;
 use App\Services\EvaluacionService;
 use App\Services\FumService;
 use App\Services\BoletaWordService;
+use App\Services\ReporteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -79,6 +80,11 @@ class EstudianteController extends Controller
 
         $informe = $evaluacion->generarDatosInformeProgreso($id, $data['periodo_id'] ?? null);
 
+        app(ReporteService::class)->registrarOficial('boleta', 'pdf', [
+            'periodo_id' => $data['periodo_id'] ?? $informe['periodo']?->id,
+            'estudiante_id' => $id,
+        ], 1);
+
         return \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.boleta', ['informe' => $informe])
             ->setPaper('a4')
             ->download("informe-progreso-{$id}.pdf");
@@ -95,7 +101,14 @@ class EstudianteController extends Controller
 
         $estudiante = Estudiante::findOrFail($id);
 
-        $rutaTemp = $boleta->generarDocx($estudiante, $request->query('periodo_id') ? (int) $request->query('periodo_id') : null);
+        $periodoId = $request->query('periodo_id') ? (int) $request->query('periodo_id') : null;
+
+        $rutaTemp = $boleta->generarDocx($estudiante, $periodoId);
+
+        app(ReporteService::class)->registrarOficial('boleta', 'docx', [
+            'periodo_id' => $periodoId,
+            'estudiante_id' => $estudiante->id,
+        ], 1);
 
         $nombre = 'BOLETA_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.docx';
 
@@ -135,6 +148,11 @@ class EstudianteController extends Controller
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reportes.fum', $datos)
             ->setPaper('a4', 'portrait');
 
+        app(ReporteService::class)->registrarOficial('fum', 'pdf', [
+            'periodo_id' => $data['periodo_id'] ?? $datos['periodo']?->id,
+            'estudiante_id' => $estudiante->id,
+        ], 1);
+
         $nombre = 'FUM_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.pdf';
 
         return $pdf->download($nombre);
@@ -153,6 +171,11 @@ class EstudianteController extends Controller
             ->findOrFail($id);
 
         $rutaTemp = $fum->generarDocx($estudiante, $request->query('periodo_id') ? (int) $request->query('periodo_id') : null);
+
+        app(ReporteService::class)->registrarOficial('fum', 'docx', [
+            'periodo_id' => $request->query('periodo_id') ? (int) $request->query('periodo_id') : null,
+            'estudiante_id' => $estudiante->id,
+        ], 1);
 
         $nombre = 'FUM_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.docx';
 

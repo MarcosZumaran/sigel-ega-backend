@@ -40,6 +40,31 @@ class ReporteService
         return $m;
     }
 
+    /**
+     * Registra un reporte oficial en la tabla `reportes` (RF-29).
+     *
+     * A diferencia de los reportes internos, los oficiales no se almacenan en Storage:
+     * solo se registra el evento para trazabilidad.
+     *
+     * @param string $tipo      acta-evaluacion | nomina-matricula | orden-merito | fum | boleta
+     * @param string $formato   pdf | docx
+     * @param array  $contexto  ['periodo_id' => X, 'seccion_id' => Y, 'estudiante_id' => Z, 'grado_id' => W]
+     * @param int    $filas     Cantidad de registros procesados
+     */
+    public function registrarOficial(string $tipo, string $formato, array $contexto, int $filas = 0): Reporte
+    {
+        return Reporte::create([
+            'tipo' => $tipo,
+            'periodo_id' => $contexto['periodo_id'] ?? null,
+            'seccion_id' => $contexto['seccion_id'] ?? null,
+            'formato' => $formato,
+            'estado' => 'generado',
+            'parametros' => array_merge($contexto, ['filas' => $filas]),
+            'generado_por' => auth()->id(),
+            'expira_en' => now()->addYear(),
+        ]);
+    }
+
     public function generar(array $data, string $origen = 'api'): Reporte
     {
         $data['expira_en'] = now()->addYear();

@@ -9,6 +9,7 @@ use App\Models\Matricula;
 use App\Models\Periodo;
 use App\Models\Seccion;
 use App\Services\EvaluacionService;
+use App\Services\ActaWordService;
 use App\Services\NominaWordService;
 use App\Services\OrdenWordService;
 use App\Services\ReporteService;
@@ -94,6 +95,11 @@ class ReporteController extends Controller
         $periodo = Periodo::findOrFail($data['periodo_id']);
         [$areas, $filas] = $this->prepararDatosActa($seccion, $periodo, $evaluacion);
 
+        $this->service->registrarOficial('acta-evaluacion', 'pdf', [
+            'periodo_id' => $periodo->id,
+            'seccion_id' => $seccion->id,
+        ], count($filas));
+
         return Pdf::loadView('reportes.acta-evaluacion', compact('seccion', 'periodo', 'areas', 'filas'))
             ->setPaper('a4', 'landscape')
             ->download("acta-evaluacion-{$seccion->id}-{$periodo->id}.pdf");
@@ -109,6 +115,11 @@ class ReporteController extends Controller
         $periodo = Periodo::findOrFail($request->periodo_id);
 
         $rutaTemp = $actaWord->generarDocx($seccion, $periodo);
+
+        $this->service->registrarOficial('acta-evaluacion', 'docx', [
+            'periodo_id' => $periodo->id,
+            'seccion_id' => $seccion->id,
+        ], Matricula::where('seccion_id', $seccion->id)->where('periodo_id', $periodo->id)->count());
 
         return response()->download($rutaTemp, "ACTA_{$seccion->id}_{$periodo->id}_".date('Ymd').'.docx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -151,6 +162,11 @@ class ReporteController extends Controller
         $periodo = Periodo::findOrFail($data['periodo_id']);
         $matriculas = $this->prepararDatosNomina($seccion, $periodo);
 
+        $this->service->registrarOficial('nomina-matricula', 'pdf', [
+            'periodo_id' => $periodo->id,
+            'seccion_id' => $seccion->id,
+        ], $matriculas->count());
+
         return Pdf::loadView('reportes.nomina-matricula', compact('seccion', 'periodo', 'matriculas'))
             ->setPaper('a4')
             ->download("nomina-matricula-{$seccion->id}-{$periodo->id}.pdf");
@@ -166,6 +182,11 @@ class ReporteController extends Controller
         $periodo = Periodo::findOrFail($data['periodo_id']);
 
         $rutaTemp = $nomina->generarDocx($seccion, $periodo);
+
+        $this->service->registrarOficial('nomina-matricula', 'docx', [
+            'periodo_id' => $periodo->id,
+            'seccion_id' => $seccion->id,
+        ], $nomina->matriculas($seccion, $periodo)->count());
 
         return response()->download($rutaTemp, "NOMINA_{$seccion->id}_{$periodo->id}_".date('Ymd').'.docx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -190,6 +211,11 @@ class ReporteController extends Controller
         $periodo = Periodo::findOrFail($data['periodo_id']);
         $filas = $this->prepararDatosOrdenMerito($grado, $periodo, $evaluacion);
 
+        $this->service->registrarOficial('orden-merito', 'pdf', [
+            'periodo_id' => $periodo->id,
+            'grado_id' => $grado->id,
+        ], count($filas));
+
         return Pdf::loadView('reportes.orden-merito', compact('grado', 'periodo', 'filas'))
             ->setPaper('a4')
             ->download("orden-merito-{$grado->id}-{$periodo->id}.pdf");
@@ -205,6 +231,11 @@ class ReporteController extends Controller
         $periodo = Periodo::findOrFail($data['periodo_id']);
 
         $rutaTemp = $orden->generarDocx($grado, $periodo);
+
+        $this->service->registrarOficial('orden-merito', 'docx', [
+            'periodo_id' => $periodo->id,
+            'grado_id' => $grado->id,
+        ], count($orden->filas($grado, $periodo)));
 
         return response()->download($rutaTemp, "ORDEN_{$grado->id}_{$periodo->id}_".date('Ymd').'.docx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

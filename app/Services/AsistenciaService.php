@@ -83,7 +83,7 @@ class AsistenciaService
     {
         $user = auth()->user();
         if (! $user) return;
-        if ((int) $user->rol_id === 1) return;
+        if ($user->hasRole('ADMIN')) return;
         $matId = $data['matricula_id'] ?? $existing?->matricula_id;
         if (! $matId) throw new EnUsoException('Solo el administrador puede gestionar asistencias sin matrícula.');
         $mat = Matricula::with('seccion')->find($matId);

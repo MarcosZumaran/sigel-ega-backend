@@ -45,7 +45,7 @@ class UserService
         if (! isset($data['rol_id']) || $data['rol_id'] === null) return;
         if ((int) $data['rol_id'] === 1) {
             $user = auth()->user();
-            if (! $user || (int) $user->rol_id !== 1) {
+            if (! $user || ! $user->hasRole('ADMIN')) {
                 throw new EnUsoException('Solo el administrador puede asignar rol ADMIN.');
             }
         }

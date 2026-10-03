@@ -9,8 +9,9 @@ use App\Models\Matricula;
 use App\Models\Periodo;
 use App\Models\Seccion;
 use App\Services\EvaluacionService;
+use App\Services\NominaWordService;
+use App\Services\OrdenWordService;
 use App\Services\ReporteService;
-use App\Services\WordExportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -155,7 +156,7 @@ class ReporteController extends Controller
             ->download("nomina-matricula-{$seccion->id}-{$periodo->id}.pdf");
     }
 
-    public function nominaMatriculaWord(Request $request, WordExportService $word)
+    public function nominaMatriculaWord(Request $request, NominaWordService $nomina)
     {
         $data = $request->validate([
             'seccion_id' => 'required|integer|exists:secciones,id',
@@ -163,10 +164,8 @@ class ReporteController extends Controller
         ]);
         $seccion = Seccion::with('grado')->findOrFail($data['seccion_id']);
         $periodo = Periodo::findOrFail($data['periodo_id']);
-        $matriculas = $this->prepararDatosNomina($seccion, $periodo);
 
-        $rutaTemp = storage_path('app/private/tmp_'.uniqid().'.docx');
-        $word->desdeVista('reportes.nomina-matricula', compact('seccion', 'periodo', 'matriculas'), $rutaTemp);
+        $rutaTemp = $nomina->generarDocx($seccion, $periodo);
 
         return response()->download($rutaTemp, "NOMINA_{$seccion->id}_{$periodo->id}_".date('Ymd').'.docx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -178,9 +177,7 @@ class ReporteController extends Controller
      */
     private function prepararDatosNomina(Seccion $seccion, Periodo $periodo)
     {
-        return Matricula::with(['estudiante.apoderado.padres'])
-            ->where('seccion_id', $seccion->id)->where('periodo_id', $periodo->id)
-            ->orderBy('id')->get();
+        return app(NominaWordService::class)->matriculas($seccion, $periodo);
     }
 
     public function ordenMerito(Request $request, EvaluacionService $evaluacion)
@@ -198,7 +195,7 @@ class ReporteController extends Controller
             ->download("orden-merito-{$grado->id}-{$periodo->id}.pdf");
     }
 
-    public function ordenMeritoWord(Request $request, EvaluacionService $evaluacion, WordExportService $word)
+    public function ordenMeritoWord(Request $request, OrdenWordService $orden)
     {
         $data = $request->validate([
             'grado_id' => 'required|integer|exists:grados,id',
@@ -206,10 +203,8 @@ class ReporteController extends Controller
         ]);
         $grado = Grado::findOrFail($data['grado_id']);
         $periodo = Periodo::findOrFail($data['periodo_id']);
-        $filas = $this->prepararDatosOrdenMerito($grado, $periodo, $evaluacion);
 
-        $rutaTemp = storage_path('app/private/tmp_'.uniqid().'.docx');
-        $word->desdeVista('reportes.orden-merito', compact('grado', 'periodo', 'filas'), $rutaTemp);
+        $rutaTemp = $orden->generarDocx($grado, $periodo);
 
         return response()->download($rutaTemp, "ORDEN_{$grado->id}_{$periodo->id}_".date('Ymd').'.docx', [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -221,37 +216,6 @@ class ReporteController extends Controller
      */
     private function prepararDatosOrdenMerito(Grado $grado, Periodo $periodo, EvaluacionService $evaluacion): array
     {
-        $num = ['AD' => 4, 'A' => 3, 'B' => 2, 'C' => 1];
-        $seccionIds = Seccion::where('grado_id', $grado->id)->pluck('id');
-        $matriculas = Matricula::with(['estudiante', 'seccion'])
-            ->whereIn('seccion_id', $seccionIds)->where('periodo_id', $periodo->id)
-            ->orderBy('id')->get();
-        $filas = [];
-        foreach ($matriculas as $m) {
-            $informe = $evaluacion->generarDatosInformeProgreso($m->estudiante_id, $periodo->id);
-            $vals = [];
-            foreach ($informe['areas'] ?? [] as $a) {
-                if (! empty($a['nivel_logro_area']) && isset($num[$a['nivel_logro_area']])) {
-                    $vals[] = $num[$a['nivel_logro_area']];
-                }
-            }
-            if ($vals === []) {
-                continue;
-            }
-            $filas[] = ['matricula' => $m, 'promedio' => round(array_sum($vals) / count($vals) * 5, 1)];
-        }
-        usort($filas, fn ($a, $b) => $b['promedio'] <=> $a['promedio']);
-        $puesto = 0;
-        $prev = null;
-        foreach ($filas as $i => &$f) {
-            if ($prev === null || $f['promedio'] < $prev) {
-                $puesto = $i + 1;
-                $prev = $f['promedio'];
-            }
-            $f['puesto'] = $puesto;
-        }
-        unset($f);
-
-        return $filas;
+        return app(OrdenWordService::class)->filas($grado, $periodo);
     }
 }

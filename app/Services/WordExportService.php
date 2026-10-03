@@ -60,6 +60,10 @@ class WordExportService
 
     /**
      * Renderiza una vista Blade y la convierte a Word.
+     *
+     * @deprecated Se reemplazará progresivamente por WordBuilderService
+     *             (construcción programática que preserva tablas y colores).
+     *             FUM ya migrada; acta, nómina, boleta y orden pendientes.
      */
     public function desdeVista(string $vistaBlade, array $datos, string $rutaDestino): string
     {

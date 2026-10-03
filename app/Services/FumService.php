@@ -70,4 +70,86 @@ class FumService
             'generado_en' => now(),
         ];
     }
+
+    /**
+     * Genera la FUM como .docx programático con WordBuilderService.
+     */
+    public function generarDocx(Estudiante $estudiante, ?int $periodoId = null): string
+    {
+        $datos = $this->datos($estudiante, $periodoId);
+        $builder = app(WordBuilderService::class, ['orientacion' => 'portrait']);
+
+        $builder->addMembrete(
+            'FICHA ÚNICA DE MATRÍCULA',
+            'Año escolar: '.($datos['periodo']?->anio ?? date('Y'))
+        );
+
+        // Sección 1: Datos del estudiante
+        $builder->addSeccionTitulo('DATOS DEL ESTUDIANTE');
+        $builder->addTabla([], [
+            ['Apellidos y Nombres', trim(($estudiante->apellidos ?? '').', '.($estudiante->nombres ?? ''))],
+            ['DNI', $estudiante->dni ?? ''],
+            ['Código', $estudiante->codigo_estudiante ?? ''],
+            ['Fecha de nacimiento', $estudiante->fecha_nacimiento ?? ''],
+            ['Sexo', $estudiante->sexo === 'M' ? 'Masculino' : ($estudiante->sexo === 'F' ? 'Femenino' : '')],
+            ['Lugar de nacimiento', collect([
+                $estudiante->distrito_nacimiento,
+                $estudiante->provincia_nacimiento,
+                $estudiante->departamento_nacimiento,
+                $estudiante->pais_nacimiento,
+            ])->filter()->implode(', ')],
+            ['Lengua materna', $estudiante->lengua_materna ?? ''],
+            ['Autoidentificación étnica', $estudiante->autoidentificacion_etnica ?? ''],
+            ['Dirección', $estudiante->direccion ?? ''],
+        ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);
+
+        // Sección 2: Matrícula
+        $builder->addSeccionTitulo('INFORMACIÓN DE MATRÍCULA');
+        $mat = $datos['matricula'];
+        $builder->addTabla([], [
+            ['Nivel', $mat?->seccion?->grado?->nivel?->nombre ?? ''],
+            ['Grado y Sección', ($mat?->seccion?->grado?->nombre ?? '').' "'.($mat?->seccion?->nombre ?? '').'"'],
+            ['Tipo de matrícula', $mat?->tipoMatricula?->nombre ?? 'Regular'],
+            ['Fecha de matrícula', $mat?->fecha ?? ''],
+            ['Estado', $mat?->estado?->nombre ?? ''],
+        ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);
+
+        // Sección 3: Apoderado
+        $builder->addSeccionTitulo('DATOS DEL REPRESENTANTE LEGAL');
+        $padre = $datos['padre'];
+        $builder->addTabla([], [
+            ['Apellidos y Nombres', $padre ? trim(($padre->apellidos ?? '').', '.($padre->nombres ?? '')) : ''],
+            ['DNI', $padre?->dni ?? ''],
+            ['Teléfono', $padre?->telefono ?? ''],
+            ['Correo', $padre?->email ?? ''],
+            ['Dirección', $padre?->direccion ?? ''],
+        ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);
+
+        // NEE (si aplica)
+        if ($estudiante->tiene_discapacidad || $datos['nee']) {
+            $builder->addSeccionTitulo('NECESIDADES EDUCATIVAS ESPECIALES');
+            $nee = $datos['nee'];
+            $builder->addTabla([], [
+                ['Tiene discapacidad', $estudiante->tiene_discapacidad ? 'SÍ' : 'NO'],
+                ['Tipo', $estudiante->tipo_discapacidad ?? $nee?->tipo_nee ?? ''],
+                ['Grado', $estudiante->grado_discapacidad ?? ''],
+                ['Certificado', $estudiante->tiene_certificado_discapacidad ? 'SÍ' : 'NO'],
+            ], ['anchos' => [3000, 6000], 'colorear_celdas' => false]);
+        }
+
+        // Firmas
+        $builder->addFirmas([
+            ['nombre' => 'Firma del Padre/Madre/Apoderado', 'detalle' => 'DNI: '.($padre?->dni ?? '')],
+            ['nombre' => 'Firma del Director', 'detalle' => $datos['ie']['director'] ?? ''],
+        ]);
+
+        // Pie
+        $builder->addPie(
+            'SIGEL-EGA — Generado '.now()->format('d/m/Y H:i').' · '.$datos['ie']['nombre']
+        );
+
+        $ruta = storage_path('app/private/tmp_'.uniqid().'.docx');
+
+        return $builder->guardar($ruta);
+    }
 }

@@ -124,19 +124,16 @@ class EstudianteController extends Controller
     /**
      * Genera el documento Word oficial de la FUM.
      */
-    public function fumWord(Request $request, int $id, FumService $fum, WordExportService $word)
+    public function fumWord(Request $request, int $id, FumService $fum)
     {
-        $data = $request->validate([
+        $request->validate([
             'periodo_id' => 'nullable|integer|exists:periodos,id',
         ]);
 
         $estudiante = Estudiante::with(['nivel', 'grado', 'estado', 'apoderado'])
             ->findOrFail($id);
 
-        $datos = $fum->datos($estudiante, $data['periodo_id'] ?? null);
-
-        $rutaTemp = storage_path('app/private/tmp_'.uniqid().'.docx');
-        $word->desdeVista('reportes.fum', $datos, $rutaTemp);
+        $rutaTemp = $fum->generarDocx($estudiante, $request->query('periodo_id') ? (int) $request->query('periodo_id') : null);
 
         $nombre = 'FUM_'.($estudiante->dni ?: $estudiante->id).'_'.date('Ymd').'.docx';
 

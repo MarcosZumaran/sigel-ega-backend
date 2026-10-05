@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CalificacionActividad extends Model
 {
-    use Auditable;
+    use Auditable, SoftDeletes;
 
     protected $table = 'calificaciones_actividades';
 

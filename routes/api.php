@@ -291,7 +291,6 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
         Route::post('/{id}/restore', [ActividadController::class, 'restore'])->middleware('admin');
         Route::get('/{id}/calificaciones', [ActividadController::class, 'calificaciones']);
         Route::post('/{id}/calificaciones', [ActividadController::class, 'guardarCalificaciones']);
-        Route::get('/{id}/sugerir-nivel', [ActividadController::class, 'sugerirNivel']);
     });
 
     Route::prefix('asignaciones-docentes')->whereNumber('id')->middleware('admin')->group(function () {
@@ -303,6 +302,9 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
         Route::delete('/{id}', [AsignacionDocenteController::class, 'destroy']);
         Route::post('/{id}/restore', [AsignacionDocenteController::class, 'restore']);
     });
+
+    // Sugerencia de nivel basada en actividades (consulta sin efecto secundario)
+    Route::get('competencias/sugerir-nivel', [ActividadController::class, 'sugerirNivel']);
 
     Route::prefix('asistencias')->whereNumber('id')->group(function () {
         Route::get('/', [AsistenciaController::class, 'index']);

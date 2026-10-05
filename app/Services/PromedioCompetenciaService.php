@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Actividad;
+use App\Models\Bimestre;
 use App\Models\CalificacionActividad;
 use App\Models\Matricula;
 
@@ -126,7 +127,11 @@ class PromedioCompetenciaService
      */
     public function calcularSeccion(int $seccionId, int $competenciaId, int $bimestreId): array
     {
-        $matriculas = Matricula::query()->where('seccion_id', $seccionId)->pluck('id');
+        $bimestre = Bimestre::findOrFail($bimestreId);
+        $matriculas = Matricula::query()
+            ->where('seccion_id', $seccionId)
+            ->where('periodo_id', $bimestre->periodo_id)
+            ->pluck('id');
         $resultado = [];
         foreach ($matriculas as $matId) {
             $resultado[$matId] = $this->calcular($matId, $competenciaId, $bimestreId);

@@ -66,6 +66,7 @@ class ActividadService
         $model = $this->getById($id);
         $this->assertBimestreAbierto((int) $model->bimestre_id);
         $this->validar(array_merge($model->toArray(), array_filter($data, fn ($v) => ! is_null($v))));
+        $this->assertDocenteAsignado(array_merge($model->toArray(), $data));
         $model->update($data);
         return $model;
     }
@@ -86,6 +87,7 @@ class ActividadService
         if (! $model || ! $model->trashed()) {
             throw new NotFoundException('Actividad', $id);
         }
+        $this->assertBimestreAbierto((int) $model->bimestre_id);
         $model->restore();
         return $model->refresh();
     }

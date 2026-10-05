@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Exceptions\NotFoundException;
+use App\Models\Area;
 use App\Models\AsignacionDocente;
+use App\Models\Seccion;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -78,6 +80,21 @@ class AsignacionDocenteService
         }
         if (empty($data['seccion_id'])) {
             throw ValidationException::withMessages(['seccion_id' => 'La sección es obligatoria.']);
+        }
+
+        // Validar coherencia nivel sección ↔ área
+        if (! empty($data['area_id'])) {
+            $seccion = Seccion::with('grado.nivel')->find($data['seccion_id']);
+            $area = Area::find($data['area_id']);
+
+            if ($seccion && $area && $area->nivel_id) {
+                $nivelSeccion = $seccion->grado?->nivel_id;
+                if ($nivelSeccion && $area->nivel_id !== $nivelSeccion) {
+                    throw ValidationException::withMessages([
+                        'area_id' => 'El área no corresponde al nivel de la sección.',
+                    ]);
+                }
+            }
         }
     }
 

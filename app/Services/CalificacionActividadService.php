@@ -84,18 +84,22 @@ class CalificacionActividadService
 
     public function delete(int $id): void
     {
-        $model = CalificacionActividad::find($id);
+        $model = CalificacionActividad::with('actividad')->find($id);
         if (! $model) {
             throw new NotFoundException('CalificacionActividad', $id);
         }
+        $this->assertBimestreAbierto((int) $model->actividad->bimestre_id);
         $model->delete();
     }
 
     public function restore(int $id): CalificacionActividad
     {
-        $model = CalificacionActividad::withTrashed()->find($id);
+        $model = CalificacionActividad::withTrashed()->with('actividad')->find($id);
         if (! $model || ! $model->trashed()) {
             throw new NotFoundException('CalificacionActividad', $id);
+        }
+        if ($model->actividad) {
+            $this->assertBimestreAbierto((int) $model->actividad->bimestre_id);
         }
         $model->restore();
         return $model->refresh();

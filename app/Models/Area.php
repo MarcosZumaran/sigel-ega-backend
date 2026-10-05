@@ -53,6 +53,16 @@ class Area extends Model
         return $this->hasMany(\App\Models\Calificacion::class, 'area_id', 'id');
     }
 
+    public function actividades(): HasMany
+    {
+        return $this->hasMany(Actividad::class, 'competencia_id');
+    }
+
+    public function asignaciones(): HasMany
+    {
+        return $this->hasMany(AsignacionDocente::class);
+    }
+
     public function scopeAreas($query)
     {
         return $query->where('tipo', 'area');

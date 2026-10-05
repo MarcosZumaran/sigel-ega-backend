@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AreaController;
+use App\Http\Controllers\Api\ActividadController;
+use App\Http\Controllers\Api\AsignacionDocenteController;
 use App\Http\Controllers\Api\AsistenciaController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BimestreController;
@@ -277,6 +279,32 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
         Route::delete('/{id}', [CalificacionController::class, 'destroy']);
         Route::post('/{id}/restore', [CalificacionController::class, 'restore'])->middleware('admin');
     });
+
+    // ============ ACTIVIDADES POR COMPETENCIA (Fase A) ============
+    Route::prefix('actividades')->whereNumber('id')->group(function () {
+        Route::get('/', [ActividadController::class, 'index']);
+        Route::post('/', [ActividadController::class, 'store']);
+        Route::get('/{id}', [ActividadController::class, 'show']);
+        Route::put('/{id}', [ActividadController::class, 'update']);
+        Route::patch('/{id}', [ActividadController::class, 'update']);
+        Route::delete('/{id}', [ActividadController::class, 'destroy']);
+        Route::post('/{id}/restore', [ActividadController::class, 'restore'])->middleware('admin');
+        Route::get('/{id}/calificaciones', [ActividadController::class, 'calificaciones']);
+        Route::post('/{id}/calificaciones', [ActividadController::class, 'guardarCalificaciones']);
+    });
+
+    Route::prefix('asignaciones-docentes')->whereNumber('id')->middleware('admin')->group(function () {
+        Route::get('/', [AsignacionDocenteController::class, 'index']);
+        Route::post('/', [AsignacionDocenteController::class, 'store']);
+        Route::get('/{id}', [AsignacionDocenteController::class, 'show']);
+        Route::put('/{id}', [AsignacionDocenteController::class, 'update']);
+        Route::patch('/{id}', [AsignacionDocenteController::class, 'update']);
+        Route::delete('/{id}', [AsignacionDocenteController::class, 'destroy']);
+        Route::post('/{id}/restore', [AsignacionDocenteController::class, 'restore']);
+    });
+
+    // Sugerencia de nivel basada en actividades (consulta sin efecto secundario)
+    Route::get('competencias/sugerir-nivel', [ActividadController::class, 'sugerirNivel']);
 
     Route::prefix('asistencias')->whereNumber('id')->group(function () {
         Route::get('/', [AsistenciaController::class, 'index']);

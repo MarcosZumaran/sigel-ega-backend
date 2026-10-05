@@ -49,4 +49,14 @@ class Seccion extends Model
     {
         return $this->hasMany(\App\Models\Matricula::class, 'seccion_id', 'id');
     }
+
+    public function asignaciones(): HasMany
+    {
+        return $this->hasMany(AsignacionDocente::class);
+    }
+
+    public function actividades(): HasMany
+    {
+        return $this->hasMany(Actividad::class);
+    }
 }

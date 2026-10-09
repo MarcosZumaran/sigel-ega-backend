@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Actividad;
 use App\Models\Area;
 use App\Models\Bimestre;
 use App\Models\Calificacion;
@@ -14,9 +15,10 @@ use Illuminate\Support\Facades\DB;
 
 class EvaluacionService
 {
-    public const NIVEL_A_NUMERO = ['AD' => 4, 'A' => 3, 'B' => 2, 'C' => 1];
+    // RVM N° 094-2020-MINEDU (Anexo 09): B = 2.5. Alineado con PromedioCompetenciaService.
+    public const NIVEL_A_NUMERO = ['AD' => 4.0, 'A' => 3.0, 'B' => 2.5, 'C' => 1.0];
 
-    public static function nivelANumero(?string $nivel): ?int
+    public static function nivelANumero(?string $nivel): ?float
     {
         return $nivel !== null ? (self::NIVEL_A_NUMERO[$nivel] ?? null) : null;
     }
@@ -37,11 +39,24 @@ class EvaluacionService
     }
 
     /**
-     * Nivel de logro de una competencia (área hija) para una matrícula en un bimestre,
-     * promediando las calificaciones con nivel en escala numérica.
+     * Nivel de logro de una competencia (área hija) para una matrícula en un bimestre.
+     * 1. Si hay actividades registradas: nivel sugerido vía PromedioCompetenciaService (nuevo).
+     * 2. Fallback legacy: promedio de calificaciones por tipo_evaluacion.
      */
     public static function calcularNivelLogroCompetencia(int $matriculaId, int $competenciaId, int $bimestreId): ?string
     {
+        $hayActividades = Actividad::query()
+            ->where('competencia_id', $competenciaId)
+            ->where('bimestre_id', $bimestreId)
+            ->exists();
+
+        if ($hayActividades) {
+            $svc = app(PromedioCompetenciaService::class);
+            $resultado = $svc->calcular($matriculaId, $competenciaId, $bimestreId);
+
+            return $resultado['nivel_sugerido'];
+        }
+
         $niveles = Calificacion::query()
             ->where('matricula_id', $matriculaId)
             ->where('area_id', $competenciaId)

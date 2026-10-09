@@ -1,14 +1,17 @@
 <?php
 
-namespace Tests\Feature\Auth;
+namespace Tests\Legacy\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PasswordConfirmationTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->markTestSkipped('Test legacy de Breeze — deshabilitado para proteger la BD real (usaba RefreshDatabase).');
+    }
 
     public function test_confirm_password_screen_can_be_rendered(): void
     {

@@ -1,15 +1,18 @@
 <?php
 
-namespace Tests\Feature\Auth;
+namespace Tests\Legacy\Auth;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class PasswordUpdateTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->markTestSkipped('Test legacy de Breeze — deshabilitado para proteger la BD real (usaba RefreshDatabase).');
+    }
 
     public function test_password_can_be_updated(): void
     {

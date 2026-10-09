@@ -1,12 +1,17 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Legacy\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->markTestSkipped('Test legacy de Breeze — deshabilitado para proteger la BD real.');
+    }
+
     /**
      * A basic test example.
      */

@@ -38,7 +38,7 @@ class PadreController extends Controller
             'estado_id' => 'nullable|integer|exists:estados,id',
         ]);
 
-        // El servicio crea el apoderado (hub) automáticamente y lo asigna.
+        // El apoderado se crea/vinculará cuando se asocie este padre a un estudiante.
         $model = $this->service->create($data);
 
         return response()->json($model, 201);

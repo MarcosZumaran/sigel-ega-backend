@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\EnUsoException;
 use App\Exceptions\NotFoundException;
 use App\Models\Asistencia;
+use App\Models\Docente;
 use App\Models\Matricula;
 use App\Models\Personal;
 use Illuminate\Support\Collection;
@@ -82,17 +83,32 @@ class AsistenciaService
     private function assertPuedeGestionarAsistencia(array $data, ?Asistencia $existing = null): void
     {
         $user = auth()->user();
-        if (! $user) return;
-        if ($user->hasRole('ADMIN')) return;
+        if (! $user) {
+            return;
+        }
+        if ($user->hasRole('ADMIN')) {
+            return;
+        }
+
         $matId = $data['matricula_id'] ?? $existing?->matricula_id;
-        if (! $matId) throw new EnUsoException('Solo el administrador puede gestionar asistencias sin matrícula.');
+        if (! $matId) {
+            throw new EnUsoException('Solo el administrador puede gestionar asistencias sin matrícula.');
+        }
+
         $mat = Matricula::with('seccion')->find($matId);
-        if (! $mat || ! $mat->seccion) throw new EnUsoException('Matrícula o sección no encontrada.');
-        $docenteId = $mat->seccion->docente_id;
+        if (! $mat || ! $mat->seccion) {
+            throw new EnUsoException('Matrícula o sección no encontrada.');
+        }
+
         $personal = Personal::where('user_id', $user->id)->first();
-        $ok = false;
-        if ($personal && $personal->categoria === 'docente' && (int) $personal->id === (int) $docenteId) $ok = true;
-        if (! $ok) throw new EnUsoException('Solo el docente de la sección o el administrador puede gestionar asistencias de esa matrícula.');
+        if (! $personal) {
+            throw new EnUsoException('No tiene perfil de personal asignado.');
+        }
+
+        $docente = Docente::where('dni', $personal->dni)->first();
+        if (! $docente || (int) $docente->id !== (int) $mat->seccion->docente_id) {
+            throw new EnUsoException('Solo el docente de la sección o el administrador puede gestionar asistencias de esa matrícula.');
+        }
     }
 
     private function validar(array $data): void

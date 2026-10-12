@@ -111,25 +111,30 @@ class CalificacionService
     private function assertPuedeGestionarCalificacion(array $data, ?Calificacion $existing = null): void
     {
         $user = auth()->user();
-        if (! $user) return;
-        if ($user->hasRole('ADMIN')) return;
-        $matId = $data['matricula_id'] ?? $existing?->matricula_id;
-        if (! $matId) throw new EnUsoException('Solo el administrador puede gestionar calificaciones sin matrícula.');
-        $mat = Matricula::with('seccion')->find($matId);
-        if (! $mat || ! $mat->seccion) throw new EnUsoException('Matrícula o sección no encontrada.');
-        $docenteId = $mat->seccion->docente_id;
-        $personal = Personal::where('user_id', $user->id)->first();
-        $docenteMatch = false;
-        if ($personal && $personal->categoria === 'docente') {
-            $docenteMatch = ((int) $personal->id === (int) $docenteId) || ((int) $personal->id <=3 && (int) $docenteId <=3 && (int) $personal->id === (int) $docenteId);
-            if (! $docenteMatch) {
-                $doc = Docente::find($docenteId);
-                if ($doc && $personal->dni === $doc->dni) $docenteMatch = true;
-            }
-        } else {
-            $doc = Docente::where('dni', $user->email)->first();
+        if (! $user) {
+            return;
         }
-        if (! $docenteMatch) {
+        if ($user->hasRole('ADMIN')) {
+            return;
+        }
+
+        $matId = $data['matricula_id'] ?? $existing?->matricula_id;
+        if (! $matId) {
+            throw new EnUsoException('Solo el administrador puede gestionar calificaciones sin matrícula.');
+        }
+
+        $mat = Matricula::with('seccion')->find($matId);
+        if (! $mat || ! $mat->seccion) {
+            throw new EnUsoException('Matrícula o sección no encontrada.');
+        }
+
+        $personal = Personal::where('user_id', $user->id)->first();
+        if (! $personal) {
+            throw new EnUsoException('No tiene perfil de personal asignado.');
+        }
+
+        $docente = Docente::where('dni', $personal->dni)->first();
+        if (! $docente || (int) $docente->id !== (int) $mat->seccion->docente_id) {
             throw new EnUsoException('Solo el docente de la sección o el administrador puede gestionar calificaciones de esa matrícula.');
         }
     }

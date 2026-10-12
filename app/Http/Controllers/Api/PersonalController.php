@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PersonalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PersonalController extends Controller
 {
@@ -21,13 +22,19 @@ class PersonalController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'required|string|size:8|unique:personal,dni',
+            'dni' => [
+                'required', 'string', 'size:8',
+                Rule::unique('personal', 'dni')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:100',
             'apellidos' => 'required|string|max:100',
             'categoria' => 'required|in:docente,directivo,administrativo,servicio',
             'cargo' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:150',
+            'email' => [
+                'nullable', 'string', 'email', 'max:150',
+                Rule::unique('personal', 'email')->whereNull('deleted_at'),
+            ],
             'fecha_ingreso' => 'nullable|date',
             'estado_id' => 'nullable|integer|exists:estados,id',
             'user_id' => 'nullable|integer|exists:users,id|unique:personal,user_id',
@@ -48,13 +55,19 @@ class PersonalController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'sometimes|string|size:8|unique:personal,dni,' . $id . ',id',
+            'dni' => [
+                'sometimes', 'string', 'size:8',
+                Rule::unique('personal', 'dni')->ignore($id)->whereNull('deleted_at'),
+            ],
             'nombres' => 'sometimes|string|max:100',
             'apellidos' => 'sometimes|string|max:100',
             'categoria' => 'sometimes|in:docente,directivo,administrativo,servicio',
             'cargo' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:150',
+            'email' => [
+                'nullable', 'string', 'email', 'max:150',
+                Rule::unique('personal', 'email')->ignore($id)->whereNull('deleted_at'),
+            ],
             'fecha_ingreso' => 'nullable|date',
             'estado_id' => 'nullable|integer|exists:estados,id',
             'user_id' => 'nullable|integer|exists:users,id|unique:personal,user_id,' . $id . ',id',

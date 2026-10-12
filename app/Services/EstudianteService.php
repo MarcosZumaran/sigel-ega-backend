@@ -21,7 +21,16 @@ class EstudianteService
 
     public function getById(int $id): Estudiante
     {
-        $model = Estudiante::with(['nivel', 'grado', 'estado', 'apoderado'])->find($id);
+        $model = Estudiante::with([
+            'nivel',
+            'grado',
+            'estado',
+            'apoderado.padres',
+            'matriculas' => fn ($q) => $q
+                ->with(['seccion.grado.nivel', 'periodo', 'tipoMatricula', 'estado'])
+                ->orderByDesc('periodo_id')
+                ->orderByDesc('id'),
+        ])->find($id);
 
         if (! $model) {
             throw new NotFoundException('Estudiante', $id);
@@ -60,13 +69,8 @@ class EstudianteService
         }
         unset($data['padre_id']);
 
-        if (empty($data['apoderado_id'])) {
-            // Caso excepcional: sin padre, se exige apoderado directo o crear al padre primero.
-            throw ValidationException::withMessages([
-                'padre_id' => 'Seleccione el padre para heredar su apoderado, o indique un apoderado existente.',
-            ]);
-        }
-
+        // BUG-03: el estudiante existe como persona sin necesidad de apoderado.
+        // El vínculo (padre/apoderado, nivel/grado) se define al matricular.
         $this->validar($data);
         $estudiante = Estudiante::create($data);
 

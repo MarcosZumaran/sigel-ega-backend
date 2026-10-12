@@ -11,6 +11,7 @@ use App\Services\BoletaWordService;
 use App\Services\ReporteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EstudianteController extends Controller
 {
@@ -26,8 +27,14 @@ class EstudianteController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'codigo_estudiante' => 'nullable|string|max:30|unique:estudiantes,codigo_estudiante',
-            'dni' => 'nullable|string|size:8|unique:estudiantes,dni',
+            'codigo_estudiante' => [
+                'nullable', 'string', 'max:30',
+                Rule::unique('estudiantes', 'codigo_estudiante')->whereNull('deleted_at'),
+            ],
+            'dni' => [
+                'nullable', 'string', 'size:8',
+                Rule::unique('estudiantes', 'dni')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:150',
             'apellidos' => 'required|string|max:150',
             'fecha_nacimiento' => 'nullable|date',
@@ -187,8 +194,16 @@ class EstudianteController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
-            'codigo_estudiante' => 'nullable|string|max:30|unique:estudiantes,codigo_estudiante,$id,id',
-            'dni' => 'nullable|string|size:8|unique:estudiantes,dni,$id,id',
+            'codigo_estudiante' => [
+                'nullable', 'string', 'max:30',
+                Rule::unique('estudiantes', 'codigo_estudiante')
+                    ->ignore($id)
+                    ->whereNull('deleted_at'),
+            ],
+            'dni' => [
+                'nullable', 'string', 'size:8',
+                Rule::unique('estudiantes', 'dni')->ignore($id)->whereNull('deleted_at'),
+            ],
             'nombres' => 'sometimes|string|max:150',
             'apellidos' => 'sometimes|string|max:150',
             'fecha_nacimiento' => 'nullable|date',

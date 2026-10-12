@@ -3,10 +3,8 @@
 namespace App\Services;
 
 use App\Exceptions\NotFoundException;
-use App\Models\Apoderado;
 use App\Models\Padre;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class PadreService
 {
@@ -28,11 +26,10 @@ class PadreService
 
     public function create(array $data): Padre
     {
-        // Flujo de secretaría: al registrar un padre se crea su apoderado (hub) automáticamente.
-        // Se ignora cualquier apoderado_id enviado: siempre es un hub nuevo.
+        // BUG-10 fix: el apoderado se crea cuando se vincula un padre a un
+        // estudiante (desde la vista de Apoderados), no al crear el padre.
         unset($data['apoderado_id']);
-        $apoderado = Apoderado::create(['uuid' => (string) Str::uuid()]);
-        $data['apoderado_id'] = $apoderado->id;
+        $data['apoderado_id'] = null;
         $padre = Padre::create($data);
 
         return $padre->load('apoderado');

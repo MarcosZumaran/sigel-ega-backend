@@ -1,16 +1,19 @@
 <?php
 
-namespace Tests\Feature\Auth;
+namespace Tests\Legacy\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
 {
-    use RefreshDatabase;
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->markTestSkipped('Test legacy de Breeze — deshabilitado para proteger la BD real (usaba RefreshDatabase).');
+    }
 
     public function test_reset_password_link_screen_can_be_rendered(): void
     {

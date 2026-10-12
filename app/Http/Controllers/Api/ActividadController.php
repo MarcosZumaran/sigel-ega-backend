@@ -3,6 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Actividad;
+use App\Models\Area;
+use App\Models\Bimestre;
+use App\Models\CalificacionActividad;
+use App\Models\Matricula;
 use App\Services\ActividadService;
 use App\Services\CalificacionActividadService;
 use App\Services\PromedioCompetenciaService;
@@ -138,6 +143,101 @@ class ActividadController extends Controller
                 (int) $data['competencia_id'],
                 (int) $data['bimestre_id']
             ),
+        ]);
+    }
+
+    /**
+     * Datos batch para la vista matricial (BUG-13).
+     *
+     * Reemplaza el fan-out N+1 (1 request por actividad + matriculas +
+     * sugerencia + catálogos) por UNA sola respuesta con número de
+     * queries constante (~5). Las sugerencias se calculan en PHP sobre
+     * los datos ya cargados, con la misma semántica que
+     * PromedioCompetenciaService::calcular().
+     *
+     * NOTA: se usa setEagerLoads([]) porque los modelos definen $with
+     * por defecto, que reintroduciría el N+1 dentro del batch.
+     */
+    public function matricialData(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'seccion_id' => 'required|integer|exists:secciones,id',
+            'bimestre_id' => 'required|integer|exists:bimestres,id',
+            'competencia_id' => 'required|integer|exists:areas,id',
+        ]);
+
+        $bimestre = Bimestre::query()->setEagerLoads([])->findOrFail($data['bimestre_id']);
+
+        $competencia = Area::query()->setEagerLoads([])
+            ->findOrFail($data['competencia_id'], ['id', 'nombre']);
+
+        $actividades = Actividad::query()->setEagerLoads([])
+            ->where('competencia_id', $competencia->id)
+            ->where('bimestre_id', $bimestre->id)
+            ->where('seccion_id', $data['seccion_id'])
+            ->orderBy('fecha')
+            ->get(['id', 'competencia_id', 'bimestre_id', 'seccion_id', 'titulo', 'fecha']);
+
+        $matriculas = Matricula::query()->setEagerLoads([])
+            ->with(['estudiante' => fn ($q) => $q->setEagerLoads([])
+                ->select('id', 'dni', 'nombres', 'apellidos')])
+            ->where('seccion_id', $data['seccion_id'])
+            ->where('periodo_id', $bimestre->periodo_id)
+            ->orderBy('id')
+            ->get(['id', 'seccion_id', 'estudiante_id']);
+
+        $calificaciones = CalificacionActividad::query()->setEagerLoads([])
+            ->whereIn('actividad_id', $actividades->pluck('id'))
+            ->whereIn('matricula_id', $matriculas->pluck('id'))
+            ->get(['actividad_id', 'matricula_id', 'nivel_logro']);
+
+        // Sugerencias en memoria (0 queries), misma semántica que calcular().
+        $calPorActividad = $calificaciones->groupBy('actividad_id');
+        $sugerencias = [];
+        foreach ($matriculas as $mat) {
+            $suma = 0.0;
+            $n = 0;
+            $detalle = [];
+            foreach ($actividades as $act) {
+                foreach ($calPorActividad->get($act->id, []) as $cal) {
+                    if ($cal->matricula_id !== $mat->id) {
+                        continue;
+                    }
+                    $num = PromedioCompetenciaService::nivelANumero($cal->nivel_logro);
+                    if ($num !== null) {
+                        $suma += $num;
+                        $n++;
+                        $detalle[] = [
+                            'actividad_id' => $act->id,
+                            'nivel' => $cal->nivel_logro,
+                            'valor_numerico' => $num,
+                        ];
+                    }
+                }
+            }
+            $sugerencias[$mat->id] = $n > 0
+                ? [
+                    'nivel_sugerido' => PromedioCompetenciaService::numeroANivel($suma / $n),
+                    'promedio' => round($suma / $n, 3),
+                    'total_actividades' => $actividades->count(),
+                    'actividades_evaluadas' => $n,
+                    'detalle' => $detalle,
+                ]
+                : [
+                    'nivel_sugerido' => null,
+                    'promedio' => null,
+                    'total_actividades' => $actividades->count(),
+                    'actividades_evaluadas' => 0,
+                    'detalle' => [],
+                ];
+        }
+
+        return response()->json([
+            'competencia' => $competencia,
+            'actividades' => $actividades,
+            'matriculas' => $matriculas,
+            'calificaciones' => $calificaciones,
+            'sugerencias' => $sugerencias,
         ]);
     }
 }

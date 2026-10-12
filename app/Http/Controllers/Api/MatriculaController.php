@@ -112,6 +112,6 @@ class MatriculaController extends Controller
     {
         $this->service->delete($id);
 
-        return response()->json(['message' => 'Matrícula eliminado correctamente']);
+        return response()->json(['message' => 'Matrícula eliminada correctamente']);
     }
 }

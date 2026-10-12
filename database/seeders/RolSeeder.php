@@ -12,6 +12,7 @@ class RolSeeder extends Seeder
         DB::table('roles')->insertOrIgnore([
             ['nombre' => 'ADMIN', 'descripcion' => 'Acceso total al sistema (director/administrativo)'],
             ['nombre' => 'DOCENTE', 'descripcion' => 'Ingresa notas, asistencia y observaciones'],
+            ['nombre' => 'DIRECTOR', 'descripcion' => 'Director de la IE'],
         ]);
     }
 }

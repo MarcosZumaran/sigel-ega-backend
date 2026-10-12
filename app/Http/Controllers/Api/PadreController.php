@@ -29,7 +29,10 @@ class PadreController extends Controller
             'nombres' => 'required|string|max:150',
             'apellidos' => 'required|string|max:150',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:100',
+            'email' => [
+                'nullable', 'string', 'email', 'max:100',
+                Rule::unique('padres', 'email')->whereNull('deleted_at'),
+            ],
             'direccion' => 'nullable|string|max:200',
             'ocupacion' => 'nullable|string|max:100',
             'estado_id' => 'nullable|integer|exists:estados,id',
@@ -56,7 +59,10 @@ class PadreController extends Controller
             'nombres' => 'sometimes|string|max:150',
             'apellidos' => 'sometimes|string|max:150',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:100',
+            'email' => [
+                'nullable', 'string', 'email', 'max:100',
+                Rule::unique('padres', 'email')->ignore($id)->whereNull('deleted_at'),
+            ],
             'direccion' => 'nullable|string|max:200',
             'ocupacion' => 'nullable|string|max:100',
             'estado_id' => 'nullable|integer|exists:estados,id',

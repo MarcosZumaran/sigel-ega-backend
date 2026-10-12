@@ -30,7 +30,10 @@ class DocenteController extends Controller
             'apellidos' => 'required|string|max:150',
             'especialidad' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:100',
+            'email' => [
+                'nullable', 'string', 'email', 'max:100',
+                Rule::unique('docentes', 'email')->whereNull('deleted_at'),
+            ],
         ]);
 
         $model = $this->service->create($data);
@@ -54,7 +57,10 @@ class DocenteController extends Controller
             'apellidos' => 'sometimes|string|max:150',
             'especialidad' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:100',
+            'email' => [
+                'nullable', 'string', 'email', 'max:100',
+                Rule::unique('docentes', 'email')->ignore($id)->whereNull('deleted_at'),
+            ],
         ]);
 
         $model = $this->service->update($id, $data);

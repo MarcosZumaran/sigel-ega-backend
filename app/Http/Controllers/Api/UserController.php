@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -42,7 +43,12 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => 'sometimes|string|max:150',
-            'email' => 'sometimes|string|email|max:150|unique:users,email,$id,id',
+            'email' => [
+                'sometimes', 'string', 'email', 'max:150',
+                Rule::unique('users', 'email')
+                    ->ignore($id)
+                    ->whereNull('deleted_at'),
+            ],
             'password' => 'sometimes|string|min:8',
             'rol_id' => 'nullable|integer|exists:roles,id',
             'estado_id' => 'nullable|integer|exists:estados,id',

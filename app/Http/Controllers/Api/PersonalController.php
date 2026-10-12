@@ -31,7 +31,10 @@ class PersonalController extends Controller
             'categoria' => 'required|in:docente,directivo,administrativo,servicio',
             'cargo' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:150',
+            'email' => [
+                'nullable', 'string', 'email', 'max:150',
+                Rule::unique('personal', 'email')->whereNull('deleted_at'),
+            ],
             'fecha_ingreso' => 'nullable|date',
             'estado_id' => 'nullable|integer|exists:estados,id',
             'user_id' => 'nullable|integer|exists:users,id|unique:personal,user_id',
@@ -61,7 +64,10 @@ class PersonalController extends Controller
             'categoria' => 'sometimes|in:docente,directivo,administrativo,servicio',
             'cargo' => 'nullable|string|max:100',
             'telefono' => 'nullable|string|max:20',
-            'email' => 'nullable|string|email|max:150',
+            'email' => [
+                'nullable', 'string', 'email', 'max:150',
+                Rule::unique('personal', 'email')->ignore($id)->whereNull('deleted_at'),
+            ],
             'fecha_ingreso' => 'nullable|date',
             'estado_id' => 'nullable|integer|exists:estados,id',
             'user_id' => 'nullable|integer|exists:users,id|unique:personal,user_id,' . $id . ',id',

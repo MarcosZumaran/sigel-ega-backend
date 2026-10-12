@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Exceptions\EnUsoException;
 use App\Exceptions\NotFoundException;
 use App\Models\Parentesco;
 use Illuminate\Support\Collection;
@@ -42,14 +41,8 @@ class ParentescoService
     {
         $model = $this->getById($id);
 
-        $bloqueos = ['padreEstudiantes'];
-
-        foreach ($bloqueos as $relacion) {
-            if ($model->{$relacion}()->exists()) {
-                throw new EnUsoException('No se puede eliminar el Parentesco; tiene registros asociados.');
-            }
-        }
-
+        // Parentesco ya no tiene pivote (ver migración
+        // 2026_08_20_145102_drop_padre_estudiante_table.php); borrado directo.
         $model->delete();
     }
 

@@ -305,6 +305,8 @@ Route::middleware(['auth:sanctum','throttle:300,1'])->group(function () {
 
     // Sugerencia de nivel basada en actividades (consulta sin efecto secundario)
     Route::get('competencias/sugerir-nivel', [ActividadController::class, 'sugerirNivel']);
+    // Datos batch para la vista matricial: 1 sola respuesta, queries constantes (BUG-13)
+    Route::get('actividades/matricial-data', [ActividadController::class, 'matricialData']);
 
     Route::prefix('asistencias')->whereNumber('id')->group(function () {
         Route::get('/', [AsistenciaController::class, 'index']);

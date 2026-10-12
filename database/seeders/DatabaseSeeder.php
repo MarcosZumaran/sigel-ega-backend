@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             ConfiguracionSeeder::class,
             ApoderadoSeeder::class,
             UsuarioSeeder::class,
+            RolesAndPermissionsSeeder::class,
         ]);
 
         User::firstOrCreate(

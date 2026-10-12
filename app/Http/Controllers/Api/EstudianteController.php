@@ -11,6 +11,7 @@ use App\Services\BoletaWordService;
 use App\Services\ReporteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class EstudianteController extends Controller
 {
@@ -188,7 +189,10 @@ class EstudianteController extends Controller
     {
         $data = $request->validate([
             'codigo_estudiante' => 'nullable|string|max:30|unique:estudiantes,codigo_estudiante,$id,id',
-            'dni' => 'nullable|string|size:8|unique:estudiantes,dni,$id,id',
+            'dni' => [
+                'nullable', 'string', 'size:8',
+                Rule::unique('estudiantes', 'dni')->ignore($id)->whereNull('deleted_at'),
+            ],
             'nombres' => 'sometimes|string|max:150',
             'apellidos' => 'sometimes|string|max:150',
             'fecha_nacimiento' => 'nullable|date',

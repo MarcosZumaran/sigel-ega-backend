@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PadreService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PadreController extends Controller
 {
@@ -21,7 +22,10 @@ class PadreController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'required|string|size:8|unique:padres,dni',
+            'dni' => [
+                'required', 'string', 'size:8',
+                Rule::unique('padres', 'dni')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:150',
             'apellidos' => 'required|string|max:150',
             'telefono' => 'nullable|string|max:20',
@@ -45,7 +49,10 @@ class PadreController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'sometimes|string|size:8|unique:padres,dni,$id,id',
+            'dni' => [
+                'sometimes', 'string', 'size:8',
+                Rule::unique('padres', 'dni')->ignore($id)->whereNull('deleted_at'),
+            ],
             'nombres' => 'sometimes|string|max:150',
             'apellidos' => 'sometimes|string|max:150',
             'telefono' => 'nullable|string|max:20',

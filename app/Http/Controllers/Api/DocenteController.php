@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\DocenteService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class DocenteController extends Controller
 {
@@ -21,7 +22,10 @@ class DocenteController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'required|string|size:8|unique:docentes,dni',
+            'dni' => [
+                'required', 'string', 'size:8',
+                Rule::unique('docentes', 'dni')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:150',
             'apellidos' => 'required|string|max:150',
             'especialidad' => 'nullable|string|max:100',
@@ -42,7 +46,10 @@ class DocenteController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'sometimes|string|size:8|unique:docentes,dni,$id,id',
+            'dni' => [
+                'sometimes', 'string', 'size:8',
+                Rule::unique('docentes', 'dni')->ignore($id)->whereNull('deleted_at'),
+            ],
             'nombres' => 'sometimes|string|max:150',
             'apellidos' => 'sometimes|string|max:150',
             'especialidad' => 'nullable|string|max:100',

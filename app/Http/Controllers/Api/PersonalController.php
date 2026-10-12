@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\PersonalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PersonalController extends Controller
 {
@@ -21,7 +22,10 @@ class PersonalController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'required|string|size:8|unique:personal,dni',
+            'dni' => [
+                'required', 'string', 'size:8',
+                Rule::unique('personal', 'dni')->whereNull('deleted_at'),
+            ],
             'nombres' => 'required|string|max:100',
             'apellidos' => 'required|string|max:100',
             'categoria' => 'required|in:docente,directivo,administrativo,servicio',
@@ -48,7 +52,10 @@ class PersonalController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
-            'dni' => 'sometimes|string|size:8|unique:personal,dni,' . $id . ',id',
+            'dni' => [
+                'sometimes', 'string', 'size:8',
+                Rule::unique('personal', 'dni')->ignore($id)->whereNull('deleted_at'),
+            ],
             'nombres' => 'sometimes|string|max:100',
             'apellidos' => 'sometimes|string|max:100',
             'categoria' => 'sometimes|in:docente,directivo,administrativo,servicio',

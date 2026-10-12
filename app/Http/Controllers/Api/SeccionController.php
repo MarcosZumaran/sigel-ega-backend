@@ -75,6 +75,6 @@ class SeccionController extends Controller
     {
         $this->service->delete($id);
 
-        return response()->json(['message' => 'Sección eliminado correctamente']);
+        return response()->json(['message' => 'Sección eliminada correctamente']);
     }
 }

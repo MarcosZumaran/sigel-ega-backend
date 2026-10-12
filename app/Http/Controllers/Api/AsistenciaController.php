@@ -84,6 +84,6 @@ class AsistenciaController extends Controller
     {
         $this->service->delete($id);
 
-        return response()->json(['message' => 'Asistencia eliminado correctamente']);
+        return response()->json(['message' => 'Asistencia eliminada correctamente']);
     }
 }

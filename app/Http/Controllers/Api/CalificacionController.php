@@ -80,6 +80,6 @@ class CalificacionController extends Controller
     {
         $this->service->delete($id);
 
-        return response()->json(['message' => 'Calificación eliminado correctamente']);
+        return response()->json(['message' => 'Calificación eliminada correctamente']);
     }
 }

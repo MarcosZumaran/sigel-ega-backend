@@ -58,6 +58,6 @@ class AreaController extends Controller
     {
         $this->service->delete($id);
 
-        return response()->json(['message' => 'Área eliminado correctamente']);
+        return response()->json(['message' => 'Área eliminada correctamente']);
     }
 }

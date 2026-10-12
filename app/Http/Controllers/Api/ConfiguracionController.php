@@ -58,6 +58,6 @@ class ConfiguracionController extends Controller
     {
         $this->service->delete($id);
 
-        return response()->json(['message' => 'Configuración eliminado correctamente']);
+        return response()->json(['message' => 'Configuración eliminada correctamente']);
     }
 }

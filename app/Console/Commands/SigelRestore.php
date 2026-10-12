@@ -55,12 +55,36 @@ class SigelRestore extends Command
             $zip->extractTo($tmp);
             $zip->close();
 
-            $sqlFiles = glob($tmp . '/db-dumps/*.sql') ?: [];
+            $sqlFiles = array_merge(
+                glob($tmp . '/db-dumps/*.sql') ?: [],
+                glob($tmp . '/db-dumps/*.sql.gz') ?: []
+            );
             if (empty($sqlFiles)) {
-                throw new \RuntimeException('No se encontró dump SQL en el backup.');
+                throw new \RuntimeException('No se encontró dump SQL en el backup (se esperaba *.sql o *.sql.gz).');
             }
             $sqlFile = $sqlFiles[0];
             $this->info('Dump encontrado: ' . basename($sqlFile));
+
+            // Si viene comprimido con gzip, descomprimir a un .sql temporal
+            if (str_ends_with($sqlFile, '.gz')) {
+                $sqlDescomprimido = $tmp . '/db-dumps/dump-descomprimido.sql';
+                $in = @gzopen($sqlFile, 'rb');
+                if (! $in) {
+                    throw new \RuntimeException('No se pudo abrir el dump .gz.');
+                }
+                $out = @fopen($sqlDescomprimido, 'wb');
+                if (! $out) {
+                    gzclose($in);
+                    throw new \RuntimeException('No se pudo crear el archivo descomprimido.');
+                }
+                while (! gzeof($in)) {
+                    fwrite($out, gzread($in, 8192));
+                }
+                gzclose($in);
+                fclose($out);
+                $sqlFile = $sqlDescomprimido;
+                $this->info('Dump descomprimido: ' . basename($sqlFile));
+            }
 
             $db = config('database.connections.' . config('database.default'));
 

@@ -21,7 +21,16 @@ class EstudianteService
 
     public function getById(int $id): Estudiante
     {
-        $model = Estudiante::with(['nivel', 'grado', 'estado', 'apoderado.padres'])->find($id);
+        $model = Estudiante::with([
+            'nivel',
+            'grado',
+            'estado',
+            'apoderado.padres',
+            'matriculas' => fn ($q) => $q
+                ->with(['seccion.grado.nivel', 'periodo', 'tipoMatricula', 'estado'])
+                ->orderByDesc('periodo_id')
+                ->orderByDesc('id'),
+        ])->find($id);
 
         if (! $model) {
             throw new NotFoundException('Estudiante', $id);
